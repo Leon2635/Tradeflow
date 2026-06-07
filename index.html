@@ -293,12 +293,15 @@
 
     <!-- OVERSIGT (forenklet) -->
     <section id="screen-home" class="screen active px-5 pt-5 space-y-4">
-      <div class="text-center">
+      <div class="relative text-center pt-0.5">
         <div class="text-xs text-ink-500" id="home-hello">Velkommen</div>
-        <h1 class="text-2xl font-bold text-ink-900 leading-tight">Oversigt</h1>
+        <h1 class="text-2xl font-bold text-ink-900 leading-tight truncate px-10" id="home-sag-title">Oversigt</h1>
+        <button class="tap hidden absolute right-0 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full hover:bg-soft text-ink-500 flex items-center justify-center" id="home-sag-menu" aria-label="Sag-menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="19" cy="12" r="1.9"/></svg>
+        </button>
       </div>
 
-      <!-- Aktiv sag (kompakt) -->
+      <!-- Tom-tilstand (kun når ingen sag findes) -->
       <div id="home-active-sag-container"></div>
 
       <!-- 4 status-kolonner: Mangler · TS · KS · Afvist (punkt 11) -->
@@ -355,21 +358,23 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div class="flex-1 min-w-0">
-          <h1 class="text-xl font-bold text-ink-900 truncate" id="folder-title">Dokumenter</h1>
+          <h1 class="text-base font-bold text-ink-900 leading-tight" id="folder-title">Dokumenter</h1>
           <div class="text-[11px] text-ink-500 truncate" id="folder-breadcrumb">Vælg sag</div>
         </div>
-        <button class="tap text-[11px] font-bold bg-soft border border-border text-ink-700 pl-3 pr-2 py-2 rounded-full flex items-center gap-1 shrink-0 max-w-[150px]" id="btn-pick-sag">
-          <span class="truncate" id="pick-sag-name">Skift sag</span>
-          <svg width="12" height="12" class="shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
       </div>
 
-      <!-- Upload into current folder (kompakt, balanceret pille) -->
-      <label class="tap inline-flex items-center gap-1.5 bg-clay-400 hover:bg-clay-500 text-white font-bold rounded-xl px-3.5 py-2 text-sm cursor-pointer shadow-soft" id="folder-upload-label">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        <span id="folder-upload-text">Tilføj fil</span>
-        <input type="file" accept="image/*,application/pdf,.ifc,.rvt,.dwg,.doc,.docx,.xls,.xlsx" multiple class="hidden" id="input-folder-upload">
-      </label>
+      <!-- Tilføj fil + Ny mappe side om side (punkt 3) -->
+      <div class="flex items-center gap-2">
+        <label class="tap inline-flex items-center gap-1.5 bg-clay-400 hover:bg-clay-500 text-white font-bold rounded-xl px-3.5 py-2 text-sm cursor-pointer shadow-soft" id="folder-upload-label">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span id="folder-upload-text">Tilføj fil</span>
+          <input type="file" accept="image/*,application/pdf,.ifc,.rvt,.dwg,.doc,.docx,.xls,.xlsx" multiple class="hidden" id="input-folder-upload">
+        </label>
+        <button class="tap inline-flex items-center gap-1.5 bg-soft border border-border text-ink-700 font-bold rounded-xl px-3.5 py-2 text-sm" id="btn-new-folder">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Ny mappe
+        </button>
+      </div>
 
       <!-- Subfolders -->
       <div id="folder-subfolders" class="space-y-1.5"></div>
@@ -1099,6 +1104,24 @@
     </div>
   </div>
 
+  <!-- ====== SAG-MENU (forsidens ⋯) ====== -->
+  <div id="modal-sag-menu" class="absolute inset-0 z-[60] hidden">
+    <div class="absolute inset-0 bg-ink-900/40 backdrop-blur-sm" data-close-modal></div>
+    <div class="absolute left-0 right-0 bottom-0 bg-surface border-t border-border rounded-t-3xl p-4 shadow-card">
+      <div class="mx-auto w-10 h-1 rounded-full bg-border mb-3"></div>
+      <div class="text-sm font-bold text-ink-900 px-1 pb-2 truncate" id="sagmenu-title">Sag</div>
+      <button class="tap w-full text-left px-3 py-3 rounded-xl hover:bg-soft flex items-center gap-3 text-sm font-semibold text-ink-900" id="sagmenu-open">
+        <span class="w-8 h-8 rounded-lg bg-clay-50 text-clay-600 flex items-center justify-center shrink-0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span>
+        Åbn tegning
+      </button>
+      <button class="tap w-full text-left px-3 py-3 rounded-xl hover:bg-soft flex items-center gap-3 text-sm font-semibold text-ink-900" id="sagmenu-switch">
+        <span class="w-8 h-8 rounded-lg bg-soft text-ink-700 flex items-center justify-center shrink-0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></span>
+        Skift sag
+      </button>
+      <button class="tap w-full text-center text-sm font-semibold text-ink-500 py-3 mt-1" data-close-modal>Annullér</button>
+    </div>
+  </div>
+
   <!-- ====== PRIVATLIVSPOLITIK (GDPR) ====== -->
   <div id="modal-privacy" class="absolute inset-0 z-[80] hidden">
     <div class="absolute inset-0 bg-paper flex flex-col">
@@ -1399,7 +1422,7 @@ async function deleteCustomCategory(key) {
 // ============================================================
 // Standard mappestruktur — neutral og licensfri (admin kan selv tilføje/ændre mapper)
 // ============================================================
-const APP_BUILD = '1.11.0 · 07-06-2026';
+const APP_BUILD = '1.12.0 · 07-06-2026';
 const DEFAULT_FOLDERS = [
   { code: 'C01', name: 'Basis' },
   { code: 'C02', name: 'Aftaler' },
@@ -1708,11 +1731,15 @@ async function renderHome() {
 
   const activeContainer = document.getElementById('home-active-sag-container');
   const dashStats = document.getElementById('home-dash-stats');
+  const titleEl = document.getElementById('home-sag-title');
+  const menuBtn = document.getElementById('home-sag-menu');
   const activeSag = (state.activeSagId && sager.find(s => s.id === state.activeSagId)) || sager[0];
 
   if (!activeSag) {
     dashStats.classList.add('hidden');
     document.getElementById('home-activity-section').classList.add('hidden');
+    if (titleEl) titleEl.textContent = 'Oversigt';
+    if (menuBtn) menuBtn.classList.add('hidden');
     activeContainer.innerHTML = `
       <div class="bg-surface rounded-2xl p-8 text-center shadow-card border border-border">
         <div class="w-20 h-20 rounded-full bg-clay-50 flex items-center justify-center mx-auto mb-5">
@@ -1736,24 +1763,13 @@ async function renderHome() {
   const rejected = visiblePins.filter(p => p.status === 'rejected');
   const ksInstances = (await getByIndex('ks_instances', 'by_sag', activeSag.id)).filter(k => !k.deleted);
 
-  // --- Aktiv sag (rent, selvstændigt kort — sag for sig selv, "skift" i ⋯-menu) ---
-  const sagSub = escapeHtml(activeSag.customer || activeSag.address || '');
-  activeContainer.innerHTML = `
-    <div class="bg-surface rounded-2xl border border-border shadow-card flex items-center gap-3 p-3.5">
-      <div class="w-11 h-11 rounded-xl bg-clay-50 flex items-center justify-center shrink-0">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9A6B00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-      </div>
-      <button class="tap flex-1 min-w-0 text-left" id="home-open-drawing">
-        <div class="text-[10px] uppercase tracking-wider text-ink-500 font-bold">Aktiv sag</div>
-        <div class="text-lg font-bold text-ink-900 truncate leading-tight">${escapeHtml(activeSag.title)}</div>
-        <div class="text-[11px] font-semibold text-clay-500 mt-0.5 flex items-center gap-1">${sagSub ? sagSub + ' · ' : ''}Åbn tegning<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>
-      </button>
-      <button class="tap w-9 h-9 rounded-full hover:bg-soft text-ink-500 flex items-center justify-center shrink-0" id="home-sag-menu" aria-label="Skift sag">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="12" cy="19" r="1.9"/></svg>
-      </button>
-    </div>`;
-  document.getElementById('home-open-drawing').addEventListener('click', () => { folderPath = []; showScreen('plan'); });
-  document.getElementById('home-sag-menu').addEventListener('click', () => openSagPicker('home'));
+  // --- Aktiv sag = selve overskriften (sag for sig selv) + ⋯ øverst til højre ---
+  if (titleEl) titleEl.textContent = activeSag.title;
+  if (menuBtn) {
+    menuBtn.classList.remove('hidden');
+    menuBtn.onclick = () => { const t = document.getElementById('sagmenu-title'); if (t) t.textContent = activeSag.title; openModal('modal-sag-menu'); };
+  }
+  activeContainer.innerHTML = ''; // intet separat kort — overskriften ER sagen
 
   // --- 4 store status-kort: Mangler · TS · KS · Afvist (punkt 11) ---
   const tile = (label, count, jobsKey, accent) => `
@@ -3791,19 +3807,19 @@ function renderFolderFiles(filesDiv, here) {
     const fx = fileExt(t.name);
     const openHint = (t.blob != null || t.type === 'pdf' || fx === 'pdf' || t.type === 'image' || t.storage_path) ? 'Åbn tegning'
       : (fx === 'ifc' ? 'Åbn 3D-model' : (['rvt', 'dwg'].includes(fx) ? 'Download' : ''));
-    const icon = `<div class="w-9 h-9 rounded-md bg-soft text-ink-700 flex items-center justify-center shrink-0 font-bold text-[10px]">${escapeHtml((t.type || 'fil').toUpperCase().slice(0, 3))}</div>`;
+    const icon = `<div class="w-8 h-8 rounded-md bg-soft text-ink-700 flex items-center justify-center shrink-0 font-bold text-[9px]">${escapeHtml((t.type || 'fil').toUpperCase().slice(0, 3))}</div>`;
     const szStr = fileSizeLabel(t);
-    const info = `<div class="flex-1 min-w-0"><div class="text-sm font-semibold text-ink-900 break-words leading-snug">${escapeHtml(t.name)}</div><div class="text-[11px] text-ink-500 mt-0.5">${dateStr}${szStr ? ' · ' + szStr : ''}${openHint ? ' · ' + openHint : ''}</div></div>`;
+    const info = `<div class="flex-1 min-w-0"><div class="text-[13px] font-semibold text-ink-900 break-words leading-tight">${escapeHtml(t.name)}</div><div class="text-[10px] text-ink-500 mt-0.5">${dateStr}${szStr ? ' · ' + szStr : ''}${openHint ? ' · ' + openHint : ''}</div></div>`;
     if (fileSelectMode && admin) {
       const checked = selectedFileIds.has(t.id);
-      return `<div class="tap bg-surface border ${checked ? 'border-clay-400 bg-clay-50' : 'border-border'} rounded-xl p-3 shadow-soft mb-1.5 flex items-center gap-3" data-toggle-file="${escapeHtml(t.id)}">
+      return `<div class="tap bg-surface border ${checked ? 'border-clay-400 bg-clay-50' : 'border-border'} rounded-xl p-2.5 shadow-soft mb-1.5 flex items-center gap-2.5" data-toggle-file="${escapeHtml(t.id)}">
         <div class="w-6 h-6 rounded-md border-2 ${checked ? 'bg-clay-400 border-clay-400 text-white' : 'border-border'} flex items-center justify-center shrink-0">${checked ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>' : ''}</div>
         ${icon}${info}
       </div>`;
     }
-    return `<div class="bg-surface border border-border rounded-xl p-3 shadow-soft mb-1.5 flex items-center gap-3">
-        <button class="tap flex-1 min-w-0 flex items-center gap-3 text-left" data-open-file="${escapeHtml(t.id)}">${icon}${info}</button>
-        <button class="tap text-ink-500 hover:text-ink-900 p-2 shrink-0" data-file-menu="${escapeHtml(t.id)}" aria-label="Handlinger"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></button>
+    return `<div class="bg-surface border border-border rounded-xl p-2.5 shadow-soft mb-1.5 flex items-center gap-2.5">
+        <button class="tap flex-1 min-w-0 flex items-center gap-2.5 text-left" data-open-file="${escapeHtml(t.id)}">${icon}${info}</button>
+        <button class="tap text-ink-500 hover:text-ink-900 p-1.5 shrink-0" data-file-menu="${escapeHtml(t.id)}" aria-label="Handlinger"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></button>
       </div>`;
   }).join('');
 
@@ -3855,6 +3871,18 @@ function renderFolderFiles(filesDiv, here) {
   }
 }
 
+// Opret ny mappe i den aktuelle placering (samlet til én knap — punkt 3)
+async function createFolderHere() {
+  if (!state.activeSagId) { toast('Vælg en sag på Oversigt først'); return; }
+  const name = prompt('Navn på ny mappe:', '');
+  if (!name || !name.trim()) return;
+  const c = await getCustomFolders();
+  const newPath = [...folderPath, name.trim()];
+  if (!c.some(p => p.join('/') === newPath.join('/'))) { c.push(newPath); await setCustomFolders(c); }
+  toast('Mappe oprettet');
+  renderFolders();
+}
+
 async function renderFolders() {
   const sag = state.activeSagId ? await getOne('sager', state.activeSagId) : null;
   const useMolio = !sag || sag.useMolio !== false; // default = standard mappestruktur (bagudkompatibelt)
@@ -3902,11 +3930,7 @@ async function renderFolders() {
       return fp.length > folderPath.length && fp.slice(0, folderPath.length).join('/') === here && fp[folderPath.length] === name;
     }).length;
 
-    let html = `
-      <button class="tap mb-2 inline-flex items-center gap-1.5 bg-clay-50 text-clay-600 font-bold rounded-lg px-3 py-1.5 text-xs border border-dashed border-clay-300" id="btn-add-custom-folder">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Ny mappe
-      </button>`;
+    let html = '';
     html += kids.map(name => {
       const fc = countUnder(name);
       return `
@@ -3928,15 +3952,6 @@ async function renderFolders() {
     }).join('');
     subDiv.innerHTML = html;
 
-    document.getElementById('btn-add-custom-folder').addEventListener('click', async () => {
-      const name = prompt('Navn på ny mappe:', '');
-      if (!name || !name.trim()) return;
-      const c = await getCustomFolders();
-      const newPath = [...folderPath, name.trim()];
-      if (!c.some(p => p.join('/') === newPath.join('/'))) { c.push(newPath); await setCustomFolders(c); }
-      toast('Mappe oprettet');
-      renderFolders();
-    });
     subDiv.querySelectorAll('[data-cfolder]').forEach(b =>
       b.addEventListener('click', () => { folderPath = [...folderPath, b.dataset.cfolder]; renderFolders(); }));
     subDiv.querySelectorAll('[data-del-cfolder]').forEach(b =>
@@ -4033,13 +4048,6 @@ async function renderFolders() {
         ${showAllFolders ? 'Skjul tomme mapper' : `Vis alle mapper${hiddenEmpty?` (${hiddenEmpty} tomme)`:''}`}
       </button>`;
   }
-  // "Ny mappe" — lille, diskret knap (punkt 8)
-  const addFolderHtml = `
-    <button class="tap mb-2 inline-flex items-center gap-1.5 bg-clay-50 text-clay-600 font-bold rounded-lg px-3 py-1.5 text-xs border border-dashed border-clay-300" id="btn-add-custom-folder">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Ny mappe
-    </button>`;
-
   const stdHtml = visible.map(({ c, fileCount, isRemoved }) => {
     const hasChildren = (c.children || []).length > 0;
     return `
@@ -4082,19 +4090,10 @@ async function renderFolders() {
       </div>`;
   }).join('');
 
-  subDiv.innerHTML = controlHtml + addFolderHtml + stdHtml + customHtml;
+  subDiv.innerHTML = controlHtml + stdHtml + customHtml;
 
   document.getElementById('toggle-empty-folders')?.addEventListener('click', () => {
     showAllFolders = !showAllFolders; renderFolders();
-  });
-  document.getElementById('btn-add-custom-folder')?.addEventListener('click', async () => {
-    const name = prompt('Navn på ny mappe:', '');
-    if (!name || !name.trim()) return;
-    const c = await getCustomFolders();
-    const newPath = [...folderPath, name.trim()];
-    if (!c.some(p => p.join('/') === newPath.join('/'))) { c.push(newPath); await setCustomFolders(c); }
-    toast('Mappe oprettet');
-    renderFolders();
   });
   subDiv.querySelectorAll('[data-folder]').forEach(b =>
     b.addEventListener('click', async () => {
@@ -5838,6 +5837,10 @@ function setupModals() {
     if (!document.getElementById('modal-pin').classList.contains('hidden')) autosavePinDraft(false);
     if (!document.getElementById('modal-ks-item').classList.contains('hidden')) autosaveKSItem(false);
   });
+
+  // Forsidens sag-menu (⋯)
+  document.getElementById('sagmenu-open')?.addEventListener('click', () => { closeModal('modal-sag-menu'); folderPath = []; showScreen('plan'); });
+  document.getElementById('sagmenu-switch')?.addEventListener('click', () => { closeModal('modal-sag-menu'); openSagPicker('home'); });
 }
 
 // ============================================================
@@ -7356,7 +7359,7 @@ async function init() {
   });
 
   // Sag picker
-  document.getElementById('btn-pick-sag').addEventListener('click', () => openSagPicker('plan'));
+  document.getElementById('btn-new-folder')?.addEventListener('click', createFolderHere);
 
   // Pin modal type buttons
   document.querySelectorAll('.pin-type-btn').forEach(b =>
