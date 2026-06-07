@@ -7,6 +7,9 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <!-- Import-map til 3D IFC-viewer (three.js) — loades først ved behov -->
 <script type="importmap">
 { "imports": {
@@ -87,8 +90,21 @@
   html.dark { color-scheme: dark; }
 
   html, body { background: var(--bg-outer); color: rgb(var(--c-ink-900)); }
-  body { font-family:'Inter',system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
+  body { font-family:'Plus Jakarta Sans','Inter',system-ui,-apple-system,sans-serif; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; }
+  /* Lidt strammere overskrifter for et mere poleret, professionelt look */
+  h1,h2,h3 { letter-spacing:-0.011em; }
   .tap { -webkit-tap-highlight-color:transparent; }
+
+  /* --- UX-pas: bløde overgange, tydelig fokus, tryk-feedback, reduceret bevægelse --- */
+  a, button, .tap, [role="button"] { cursor:pointer; }
+  a, button, .tap, [role="button"], input, textarea, select {
+    transition: background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease, opacity .15s ease;
+  }
+  .tap:active { opacity:.82; }            /* tryk-feedback uden layout-skift */
+  :focus-visible { outline:2px solid #E55A2B; outline-offset:2px; border-radius:6px; }
+  @media (prefers-reduced-motion: reduce) {
+    *, ::before, ::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important; }
+  }
   .screen { display:none; } .screen.active { display:block; }
   .nav-btn { color: rgb(var(--c-ink-500)); }
   .nav-btn.active { color:#C9441A; }
@@ -1379,7 +1395,7 @@ async function deleteCustomCategory(key) {
 // ============================================================
 // Standard mappestruktur — neutral og licensfri (admin kan selv tilføje/ændre mapper)
 // ============================================================
-const APP_BUILD = '1.8.0 · 07-06-2026';
+const APP_BUILD = '1.9.0 · 07-06-2026';
 const DEFAULT_FOLDERS = [
   { code: 'C01', name: 'Basis' },
   { code: 'C02', name: 'Aftaler' },
