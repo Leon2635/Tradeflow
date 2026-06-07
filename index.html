@@ -1427,7 +1427,7 @@ async function deleteCustomCategory(key) {
 // ============================================================
 // Standard mappestruktur — neutral og licensfri (admin kan selv tilføje/ændre mapper)
 // ============================================================
-const APP_BUILD = '1.17.0 · 07-06-2026';
+const APP_BUILD = '1.18.0 · 07-06-2026';
 const DEFAULT_FOLDERS = [
   { code: 'C01', name: 'Basis' },
   { code: 'C02', name: 'Aftaler' },
@@ -3799,101 +3799,107 @@ function fileSizeLabel(t) {
   return fmtBytes(b);
 }
 
-function renderFolderFiles(filesDiv, here) {
-  if (here.length === 0) {
-    fileSelectMode = false; selectedFileIds.clear();
-    filesDiv.innerHTML = `<div class="text-sm text-ink-500 text-center py-6">Ingen filer i denne mappe endnu. Tryk "Tilføj fil" ovenfor.</div>`;
-    return;
-  }
+// Tabel-visning (punkt 6): mapper + filer i samme tabel med kolonner Navn · Type · Størrelse · Ændret
+function renderFolderFiles(filesDiv, here, folders) {
+  folders = folders || [];
   const admin = isAdmin();
   const sorted = here.slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-  // ryd valg af filer der ikke længere er her
   const hereIds = new Set(sorted.map(t => t.id));
   [...selectedFileIds].forEach(id => { if (!hereIds.has(id)) selectedFileIds.delete(id); });
   if (!admin) fileSelectMode = false;
 
-  const header = `<div class="flex items-center justify-between mb-2 mt-2">
-      <div class="text-[11px] uppercase tracking-wider text-ink-500 font-bold">Filer her · ${sorted.length}</div>
+  if (folders.length + sorted.length === 0) {
+    fileSelectMode = false; selectedFileIds.clear();
+    filesDiv.innerHTML = `<div class="text-sm text-ink-500 text-center py-8">Mappen er tom. Tryk "Tilføj fil" for at uploade.</div>`;
+    return;
+  }
+
+  const topbar = `<div class="flex items-center justify-between mb-2 mt-1">
+      <div class="text-[11px] uppercase tracking-wider text-ink-500 font-bold">Indhold · ${folders.length + sorted.length}</div>
       ${admin ? (fileSelectMode
         ? `<button class="tap text-xs font-bold text-clay-500" id="files-edit-toggle">Færdig</button>`
         : `<button class="tap text-ink-500 hover:text-ink-900 p-1.5 -mr-1.5" id="files-menu-btn" aria-label="Handlinger"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button>`)
         : ''}
     </div>`;
 
-  const actionBar = (fileSelectMode && admin) ? `<div class="mb-2">
-      <div class="text-[11px] text-ink-500 mb-1.5 px-1">${selectedFileIds.size} valgt</div>
-      <div class="flex gap-2">
-        <button class="tap flex-1 text-xs font-bold bg-soft border border-border rounded-lg py-2.5 text-ink-700" id="files-select-all">${selectedFileIds.size === sorted.length ? 'Fravælg alle' : 'Vælg alle'}</button>
-        <button class="tap flex-1 text-xs font-bold bg-clay-400 text-white rounded-lg py-2.5 ${selectedFileIds.size ? '' : 'opacity-40 pointer-events-none'}" id="files-move-selected">📂 Flyt (${selectedFileIds.size})</button>
-        <button class="tap flex-1 text-xs font-bold bg-bad/10 text-bad rounded-lg py-2.5 ${selectedFileIds.size ? '' : 'opacity-40 pointer-events-none'}" id="files-delete-selected">🗑 Slet (${selectedFileIds.size})</button>
-      </div>
-    </div>` : '';
-
-  const rows = sorted.map(t => {
-    const dateStr = (t.updatedAt || t.createdAt) ? new Date(t.updatedAt || t.createdAt).toLocaleDateString('da-DK', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
-    const ft = fileTypeStyle(t.name, t.type);
-    const szStr = fileSizeLabel(t);
-    const icon = `<div class="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 font-extrabold text-[9px] tracking-tight" style="background:${ft.bg};color:${ft.fg}">${ft.abbr}</div>`;
-    const info = `<div class="flex-1 min-w-0"><div class="text-[13px] font-semibold text-ink-900 truncate leading-tight">${escapeHtml(t.name)}</div><div class="text-[10px] text-ink-500 mt-0.5">${[szStr, dateStr].filter(Boolean).join(' · ')}</div></div>`;
-    if (fileSelectMode && admin) {
+  // ---- VÆLG-TILSTAND: enkle fil-rækker med afkrydsning ----
+  if (fileSelectMode && admin) {
+    const actionBar = `<div class="mb-2">
+        <div class="text-[11px] text-ink-500 mb-1.5 px-1">${selectedFileIds.size} valgt</div>
+        <div class="flex gap-2">
+          <button class="tap flex-1 text-xs font-bold bg-soft border border-border rounded-lg py-2.5 text-ink-700" id="files-select-all">${selectedFileIds.size === sorted.length ? 'Fravælg alle' : 'Vælg alle'}</button>
+          <button class="tap flex-1 text-xs font-bold bg-clay-400 rounded-lg py-2.5 ${selectedFileIds.size ? '' : 'opacity-40 pointer-events-none'}" id="files-move-selected">📂 Flyt (${selectedFileIds.size})</button>
+          <button class="tap flex-1 text-xs font-bold bg-bad/10 text-bad rounded-lg py-2.5 ${selectedFileIds.size ? '' : 'opacity-40 pointer-events-none'}" id="files-delete-selected">🗑 Slet (${selectedFileIds.size})</button>
+        </div>
+      </div>`;
+    const selRows = sorted.map(t => {
+      const ft = fileTypeStyle(t.name, t.type);
       const checked = selectedFileIds.has(t.id);
       return `<div class="tap bg-surface border ${checked ? 'border-clay-400 bg-clay-50' : 'border-border'} rounded-xl p-2.5 shadow-soft mb-1.5 flex items-center gap-2.5" data-toggle-file="${escapeHtml(t.id)}">
         <div class="w-6 h-6 rounded-md border-2 ${checked ? 'bg-clay-400 border-clay-400 text-white' : 'border-border'} flex items-center justify-center shrink-0">${checked ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>' : ''}</div>
-        ${icon}${info}
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 font-extrabold text-[8px]" style="background:${ft.bg};color:${ft.fg}">${ft.abbr}</div>
+        <div class="flex-1 min-w-0 text-[13px] font-semibold text-ink-900 truncate">${escapeHtml(t.name)}</div>
       </div>`;
-    }
-    return `<div class="bg-surface border border-border rounded-xl p-2.5 shadow-soft mb-1.5 flex items-center gap-2.5">
-        <button class="tap flex-1 min-w-0 flex items-center gap-2.5 text-left" data-open-file="${escapeHtml(t.id)}">${icon}${info}</button>
-        <button class="tap text-ink-500 hover:text-ink-900 p-1.5 shrink-0" data-file-menu="${escapeHtml(t.id)}" aria-label="Handlinger"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></button>
-      </div>`;
-  }).join('');
-
-  filesDiv.innerHTML = header + actionBar + rows;
-
-  document.getElementById('files-edit-toggle')?.addEventListener('click', () => {
-    fileSelectMode = !fileSelectMode;
-    if (!fileSelectMode) selectedFileIds.clear();
-    renderFolderFiles(filesDiv, here);
-  });
-
-  if (fileSelectMode && admin) {
-    filesDiv.querySelectorAll('[data-toggle-file]').forEach(b => b.addEventListener('click', () => {
-      const id = b.dataset.toggleFile;
-      selectedFileIds.has(id) ? selectedFileIds.delete(id) : selectedFileIds.add(id);
-      renderFolderFiles(filesDiv, here);
-    }));
-    document.getElementById('files-select-all')?.addEventListener('click', () => {
-      if (selectedFileIds.size === sorted.length) selectedFileIds.clear();
-      else sorted.forEach(t => selectedFileIds.add(t.id));
-      renderFolderFiles(filesDiv, here);
-    });
-    document.getElementById('files-move-selected')?.addEventListener('click', () => {
-      if (!selectedFileIds.size) return;
-      openMovePicker([...selectedFileIds]);
-    });
+    }).join('');
+    filesDiv.innerHTML = topbar + actionBar + selRows;
+    document.getElementById('files-edit-toggle')?.addEventListener('click', () => { fileSelectMode = false; selectedFileIds.clear(); renderFolders(); });
+    filesDiv.querySelectorAll('[data-toggle-file]').forEach(b => b.addEventListener('click', () => { const id = b.dataset.toggleFile; selectedFileIds.has(id) ? selectedFileIds.delete(id) : selectedFileIds.add(id); renderFolders(); }));
+    document.getElementById('files-select-all')?.addEventListener('click', () => { if (selectedFileIds.size === sorted.length) selectedFileIds.clear(); else sorted.forEach(t => selectedFileIds.add(t.id)); renderFolders(); });
+    document.getElementById('files-move-selected')?.addEventListener('click', () => { if (selectedFileIds.size) openMovePicker([...selectedFileIds]); });
     document.getElementById('files-delete-selected')?.addEventListener('click', async () => {
       if (!selectedFileIds.size) return;
       if (!confirm(`Flyt ${selectedFileIds.size} fil(er) til papirkurven? De kan gendannes i Indstillinger.`)) return;
-      const ids = [...selectedFileIds];
-      for (const id of ids) await softDelete('tegninger', id);
-      selectedFileIds.clear(); fileSelectMode = false;
-      toast(`${ids.length} fil(er) flyttet til papirkurv`);
-      renderFolders();
+      const ids = [...selectedFileIds]; for (const id of ids) await softDelete('tegninger', id);
+      selectedFileIds.clear(); fileSelectMode = false; toast(`${ids.length} fil(er) flyttet til papirkurv`); renderFolders();
     });
-  } else {
-    filesDiv.querySelectorAll('[data-open-file]').forEach(b =>
-      b.addEventListener('click', () => openTegningFile(b.dataset.openFile)));
-    document.getElementById('files-menu-btn')?.addEventListener('click', openFilesMenu);
-    filesDiv.querySelectorAll('[data-file-menu]').forEach(b =>
-      b.addEventListener('click', () => openFileActions(b.dataset.fileMenu, false)));
-    filesDiv.querySelectorAll('[data-del-file]').forEach(b =>
-      b.addEventListener('click', async () => {
-        if (!confirm('Slet denne fil?')) return;
-        await deleteTegningCascade(b.dataset.delFile);
-        toast('Slettet');
-        renderFolders();
-      }));
+    return;
   }
+
+  // ---- TABEL-TILSTAND ----
+  const menuDots = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg>';
+  const colHead = `<div class="flex items-center gap-2 px-3 py-2 border-b border-border text-[9px] uppercase tracking-wider text-ink-500 font-bold">
+      <span class="w-8 shrink-0"></span>
+      <span class="flex-1 min-w-0">Navn</span>
+      <span class="w-8 text-right shrink-0">Type</span>
+      <span class="w-12 text-right shrink-0">Størr.</span>
+      <span class="w-[54px] text-right shrink-0">Ændret</span>
+      <span class="w-5 shrink-0"></span>
+    </div>`;
+  const folderRows = folders.map(f => `
+    <div class="flex items-center gap-2 px-3 py-2.5 border-b border-border">
+      <div class="w-8 h-8 rounded-lg bg-clay-50 text-clay-500 flex items-center justify-center shrink-0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>
+      <button class="tap flex-1 min-w-0 text-left" data-cfolder="${escapeHtml(f.name)}">
+        <div class="text-[13px] font-semibold text-ink-900 truncate leading-tight">${escapeHtml(f.name)}</div>
+        <div class="text-[10px] text-ink-500">${f.count} fil${f.count === 1 ? '' : 'er'}</div>
+      </button>
+      <span class="w-8 text-right text-[10px] text-ink-400 shrink-0">–</span>
+      <span class="w-12 text-right text-[10px] text-ink-400 shrink-0">–</span>
+      <span class="w-[54px] text-right text-[10px] text-ink-400 shrink-0">–</span>
+      ${admin ? `<button class="tap w-5 text-ink-400 shrink-0 flex items-center justify-center" data-del-cfolder="${escapeHtml(f.name)}" aria-label="Mappe-menu">${menuDots}</button>` : `<span class="w-5 shrink-0"></span>`}
+    </div>`).join('');
+  const fileRows = sorted.map(t => {
+    const dateStr = (t.updatedAt || t.createdAt) ? new Date(t.updatedAt || t.createdAt).toLocaleDateString('da-DK', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
+    const ft = fileTypeStyle(t.name, t.type);
+    const szStr = fileSizeLabel(t) || '–';
+    return `<div class="flex items-center gap-2 px-3 py-2.5 border-b border-border last:border-0">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 font-extrabold text-[8px] tracking-tight" style="background:${ft.bg};color:${ft.fg}">${ft.abbr}</div>
+      <button class="tap flex-1 min-w-0 text-left" data-open-file="${escapeHtml(t.id)}">
+        <div class="text-[13px] font-semibold text-ink-900 truncate leading-tight">${escapeHtml(t.name)}</div>
+      </button>
+      <span class="w-8 text-right text-[10px] text-ink-500 shrink-0">${ft.abbr}</span>
+      <span class="w-12 text-right text-[10px] text-ink-500 shrink-0 tabular-nums">${szStr}</span>
+      <span class="w-[54px] text-right text-[9px] text-ink-500 shrink-0 tabular-nums leading-tight">${dateStr}</span>
+      <button class="tap w-5 text-ink-500 shrink-0 flex items-center justify-center" data-file-menu="${escapeHtml(t.id)}" aria-label="Handlinger">${menuDots}</button>
+    </div>`;
+  }).join('');
+
+  filesDiv.innerHTML = topbar + `<div class="bg-surface border border-border rounded-2xl overflow-hidden shadow-soft">${colHead}${folderRows}${fileRows}</div>`;
+
+  document.getElementById('files-menu-btn')?.addEventListener('click', openFilesMenu);
+  document.getElementById('files-edit-toggle')?.addEventListener('click', () => { fileSelectMode = !fileSelectMode; if (!fileSelectMode) selectedFileIds.clear(); renderFolders(); });
+  filesDiv.querySelectorAll('[data-open-file]').forEach(b => b.addEventListener('click', () => openTegningFile(b.dataset.openFile)));
+  filesDiv.querySelectorAll('[data-file-menu]').forEach(b => b.addEventListener('click', () => openFileActions(b.dataset.fileMenu, false)));
+  // Mappe-rækkernes klik/slet wires af renderFolders (kræver dens scope)
 }
 
 // Opret ny mappe i den aktuelle placering (samlet til én knap — punkt 3)
@@ -3955,37 +3961,19 @@ async function renderFolders() {
       return fp.length > folderPath.length && fp.slice(0, folderPath.length).join('/') === here && fp[folderPath.length] === name;
     }).length;
 
-    let html = '';
-    html += kids.map(name => {
-      const fc = countUnder(name);
-      return `
-      <div class="flex items-center gap-1.5 mb-1.5">
-        <button class="tap flex-1 min-w-0 bg-surface border border-border rounded-xl p-3 flex items-center gap-3 text-left shadow-soft" data-cfolder="${escapeHtml(name)}">
-          <div class="w-9 h-9 rounded-lg bg-clay-50 text-clay-500 flex items-center justify-center shrink-0">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-          </div>
-          <div class="flex-1 min-w-0">
-            <div class="text-sm font-semibold text-ink-900 truncate">${escapeHtml(name)}</div>
-            <div class="text-[11px] text-ink-500 mt-0.5">mappe${fc ? ' · ' + fc + ' fil' + (fc>1?'er':'') : ''}</div>
-          </div>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgb(var(--c-ink-300))" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-        ${isAdmin() ? `<button class="tap w-9 h-9 rounded-lg bg-soft text-ink-500 flex items-center justify-center shrink-0" data-del-cfolder="${escapeHtml(name)}" title="Slet mappe">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg>
-        </button>` : ''}
-      </div>`;
-    }).join('');
-    subDiv.innerHTML = html;
-
-    subDiv.querySelectorAll('[data-cfolder]').forEach(b =>
+    // Mapper + filer i samme tabel (punkt 6)
+    subDiv.innerHTML = '';
+    const cFolders = kids.map(name => ({ name, count: countUnder(name) }));
+    const filesHere = allTegninger.filter(t => (t.folderPath || []).join('/') === here);
+    renderFolderFiles(filesDiv, filesHere, cFolders);
+    filesDiv.querySelectorAll('[data-cfolder]').forEach(b =>
       b.addEventListener('click', () => { folderPath = [...folderPath, b.dataset.cfolder]; renderFolders(); }));
-    subDiv.querySelectorAll('[data-del-cfolder]').forEach(b =>
+    filesDiv.querySelectorAll('[data-del-cfolder]').forEach(b =>
       b.addEventListener('click', async () => {
         const name = b.dataset.delCfolder;
         const target = [...folderPath, name].join('/');
         if (countUnder(name) > 0 && !confirm('Mappen indeholder filer. Slet mappen og dens filer?')) return;
         if (!confirm('Slet mappen "' + name + '"?')) return;
-        // remove folder entries (this + descendants) and files under it
         let c = await getCustomFolders();
         c = c.filter(p => !(p.join('/') === target || p.join('/').startsWith(target + '/')));
         await setCustomFolders(c);
@@ -3998,10 +3986,6 @@ async function renderFolders() {
         toast('Mappe slettet');
         renderFolders();
       }));
-
-    // Filer på dette niveau
-    const filesHere = allTegninger.filter(t => (t.folderPath || []).join('/') === here);
-    renderFolderFiles(filesDiv, filesHere);
     return;
   }
 
@@ -4115,68 +4099,50 @@ async function renderFolders() {
       </div>`;
   }).join('');
 
-  subDiv.innerHTML = controlHtml + stdHtml + customHtml;
+  // Fælles sletfunktion for egne (custom) mapper
+  const handleDelCustom = async (name) => {
+    const target = [...folderPath, name].join('/');
+    if (countCustom(name) > 0 && !confirm('Mappen indeholder filer. Slet mappen og dens filer?')) return;
+    if (!confirm('Slet mappen "' + name + '"?')) return;
+    let c = await getCustomFolders();
+    c = c.filter(p => !(p.join('/') === target || p.join('/').startsWith(target + '/')));
+    await setCustomFolders(c);
+    const files = allTegninger.filter(t => { const j = (t.folderPath || []).join('/'); return j === target || j.startsWith(target + '/'); });
+    for (const t of files) {
+      const pins = await getByIndex('pins', 'by_tegning', t.id);
+      for (const p of pins) { const fo = await getByIndex('fotos', 'by_pin', p.id); for (const f of fo) await del('fotos', f.id); await del('pins', p.id); }
+      await del('tegninger', t.id);
+    }
+    toast('Mappe slettet'); renderFolders();
+  };
 
-  document.getElementById('toggle-empty-folders')?.addEventListener('click', () => {
-    showAllFolders = !showAllFolders; renderFolders();
-  });
-  subDiv.querySelectorAll('[data-folder]').forEach(b =>
-    b.addEventListener('click', async () => {
-      folderPath = [...folderPath, b.dataset.folder];
-      showAllFolders = false;
-      await renderFolders();
-    }));
-  subDiv.querySelectorAll('[data-cfolder]').forEach(b =>
-    b.addEventListener('click', async () => {
-      folderPath = [...folderPath, b.dataset.cfolder];
-      showAllFolders = false;
-      await renderFolders();
-    }));
-  subDiv.querySelectorAll('[data-del-cfolder]').forEach(b =>
-    b.addEventListener('click', async () => {
-      const name = b.dataset.delCfolder;
-      const target = [...folderPath, name].join('/');
-      if (countCustom(name) > 0 && !confirm('Mappen indeholder filer. Slet mappen og dens filer?')) return;
-      if (!confirm('Slet mappen "' + name + '"?')) return;
-      let c = await getCustomFolders();
-      c = c.filter(p => !(p.join('/') === target || p.join('/').startsWith(target + '/')));
-      await setCustomFolders(c);
-      const files = allTegninger.filter(t => { const j = (t.folderPath||[]).join('/'); return j === target || j.startsWith(target + '/'); });
-      for (const t of files) {
-        const pins = await getByIndex('pins', 'by_tegning', t.id);
-        for (const p of pins) { const fo = await getByIndex('fotos','by_pin',p.id); for (const f of fo) await del('fotos', f.id); await del('pins', p.id); }
-        await del('tegninger', t.id);
-      }
-      toast('Mappe slettet');
-      renderFolders();
-    }));
-  subDiv.querySelectorAll('[data-remove-folder]').forEach(b =>
-    b.addEventListener('click', async () => {
-      const cp = [...folderPath, b.dataset.removeFolder].join('/');
-      if (countInPath([...folderPath, b.dataset.removeFolder]) > 0) {
-        if (!confirm('Mappen indeholder filer. Skjul den alligevel? (Filerne slettes ikke)')) return;
-      }
-      const r = await getRemovedFolders();
-      if (!r.includes(cp)) { r.push(cp); await setRemovedFolders(r); }
-      toast('Mappe skjult');
-      renderFolders();
-    }));
-  subDiv.querySelectorAll('[data-restore-folder]').forEach(b =>
-    b.addEventListener('click', async () => {
-      const cp = [...folderPath, b.dataset.restoreFolder].join('/');
-      let r = await getRemovedFolders();
-      r = r.filter(x => x !== cp);
-      await setRemovedFolders(r);
-      toast('Mappe gendannet');
-      renderFolders();
-    }));
-
-  // Files directly in this folder
   if (folderPath.length === 0) {
+    // ROOT: mappekort (C01–C11 + egne mapper) i subDiv, ingen filer
+    subDiv.innerHTML = controlHtml + stdHtml + customHtml;
     filesDiv.innerHTML = '';
+    document.getElementById('toggle-empty-folders')?.addEventListener('click', () => { showAllFolders = !showAllFolders; renderFolders(); });
+    subDiv.querySelectorAll('[data-folder]').forEach(b => b.addEventListener('click', async () => { folderPath = [...folderPath, b.dataset.folder]; showAllFolders = false; await renderFolders(); }));
+    subDiv.querySelectorAll('[data-cfolder]').forEach(b => b.addEventListener('click', async () => { folderPath = [...folderPath, b.dataset.cfolder]; showAllFolders = false; await renderFolders(); }));
+    subDiv.querySelectorAll('[data-del-cfolder]').forEach(b => b.addEventListener('click', () => handleDelCustom(b.dataset.delCfolder)));
+    subDiv.querySelectorAll('[data-remove-folder]').forEach(b => b.addEventListener('click', async () => {
+      const cp = [...folderPath, b.dataset.removeFolder].join('/');
+      if (countInPath([...folderPath, b.dataset.removeFolder]) > 0 && !confirm('Mappen indeholder filer. Skjul den alligevel? (Filerne slettes ikke)')) return;
+      const r = await getRemovedFolders(); if (!r.includes(cp)) { r.push(cp); await setRemovedFolders(r); }
+      toast('Mappe skjult'); renderFolders();
+    }));
+    subDiv.querySelectorAll('[data-restore-folder]').forEach(b => b.addEventListener('click', async () => {
+      const cp = [...folderPath, b.dataset.restoreFolder].join('/');
+      let r = await getRemovedFolders(); r = r.filter(x => x !== cp); await setRemovedFolders(r);
+      toast('Mappe gendannet'); renderFolders();
+    }));
   } else {
+    // INDE I MAPPE: tabel med undermapper + filer (punkt 6)
+    subDiv.innerHTML = '';
+    const mFolders = customKids.map(name => ({ name, count: countCustom(name) }));
     const filesHere = allTegninger.filter(t => (t.folderPath || []).join('/') === folderPath.join('/'));
-    renderFolderFiles(filesDiv, filesHere);
+    renderFolderFiles(filesDiv, filesHere, mFolders);
+    filesDiv.querySelectorAll('[data-cfolder]').forEach(b => b.addEventListener('click', async () => { folderPath = [...folderPath, b.dataset.cfolder]; showAllFolders = false; await renderFolders(); }));
+    filesDiv.querySelectorAll('[data-del-cfolder]').forEach(b => b.addEventListener('click', () => handleDelCustom(b.dataset.delCfolder)));
   }
 }
 
