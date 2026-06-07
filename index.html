@@ -360,10 +360,10 @@
         </button>
       </div>
 
-      <!-- Upload into current folder -->
-      <label class="tap block w-full bg-clay-400 hover:bg-clay-500 text-white font-bold rounded-xl py-3 text-center cursor-pointer flex items-center justify-center gap-2" id="folder-upload-label">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        <span id="folder-upload-text">Vælg en mappe for at tilføje fil</span>
+      <!-- Upload into current folder (kompakt, balanceret pille) -->
+      <label class="tap inline-flex items-center gap-1.5 bg-clay-400 hover:bg-clay-500 text-white font-bold rounded-xl px-3.5 py-2 text-sm cursor-pointer shadow-soft" id="folder-upload-label">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span id="folder-upload-text">Tilføj fil</span>
         <input type="file" accept="image/*,application/pdf,.ifc,.rvt,.dwg,.doc,.docx,.xls,.xlsx" multiple class="hidden" id="input-folder-upload">
       </label>
 
@@ -1395,7 +1395,7 @@ async function deleteCustomCategory(key) {
 // ============================================================
 // Standard mappestruktur — neutral og licensfri (admin kan selv tilføje/ændre mapper)
 // ============================================================
-const APP_BUILD = '1.9.1 · 07-06-2026';
+const APP_BUILD = '1.10.0 · 07-06-2026';
 const DEFAULT_FOLDERS = [
   { code: 'C01', name: 'Basis' },
   { code: 'C02', name: 'Aftaler' },
@@ -1656,6 +1656,8 @@ function showScreen(target) {
   document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === 'screen-' + target));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.target === target));
   document.querySelector('main').scrollTop = 0;
+  // Skjul "+"-knappen på Dokumenter (her bruges "Tilføj fil" i stedet — undgår dobbelt + overlap)
+  const _fab = document.getElementById('fab'); if (_fab) _fab.classList.toggle('hidden', target === 'plan');
   if (target === 'home') renderHome();
   if (target === 'jobs') renderJobs();
   if (target === 'plan') { folderPath = []; showAllFolders = false; renderPlan(); }
@@ -1730,20 +1732,24 @@ async function renderHome() {
   const rejected = visiblePins.filter(p => p.status === 'rejected');
   const ksInstances = (await getByIndex('ks_instances', 'by_sag', activeSag.id)).filter(k => !k.deleted);
 
-  // --- Aktiv sag (kompakt — punkt 14) ---
+  // --- Aktiv sag (rent, selvstændigt kort — sag for sig selv, "skift" i ⋯-menu) ---
+  const sagSub = escapeHtml(activeSag.customer || activeSag.address || '');
   activeContainer.innerHTML = `
-    <div class="bg-clay-400 rounded-2xl px-4 py-3 text-white shadow-card flex items-center gap-3">
-      <div class="min-w-0 flex-1">
-        <div class="text-[10px] uppercase tracking-wider text-clay-50/80 font-bold">Aktiv sag</div>
-        <div class="text-base font-bold truncate leading-tight">${escapeHtml(activeSag.title)}</div>
+    <div class="bg-surface rounded-2xl border border-border shadow-card flex items-center gap-3 p-3.5">
+      <div class="w-11 h-11 rounded-xl bg-clay-50 flex items-center justify-center shrink-0">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E55A2B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
       </div>
-      <button class="tap bg-white text-clay-600 font-bold rounded-lg px-3 py-2 text-xs flex items-center gap-1 shrink-0" id="home-open-drawing">Åbn tegning</button>
-      <button class="tap bg-white/20 hover:bg-white/30 text-white font-bold rounded-lg px-3 py-2 text-xs flex items-center gap-1 shrink-0" id="btn-switch-sag">Skift
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      <button class="tap flex-1 min-w-0 text-left" id="home-open-drawing">
+        <div class="text-[10px] uppercase tracking-wider text-ink-500 font-bold">Aktiv sag</div>
+        <div class="text-lg font-bold text-ink-900 truncate leading-tight">${escapeHtml(activeSag.title)}</div>
+        <div class="text-[11px] font-semibold text-clay-500 mt-0.5 flex items-center gap-1">${sagSub ? sagSub + ' · ' : ''}Åbn tegning<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </button>
+      <button class="tap w-9 h-9 rounded-full hover:bg-soft text-ink-500 flex items-center justify-center shrink-0" id="home-sag-menu" aria-label="Skift sag">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="12" cy="19" r="1.9"/></svg>
       </button>
     </div>`;
-  document.getElementById('btn-switch-sag').addEventListener('click', () => openSagPicker('home'));
   document.getElementById('home-open-drawing').addEventListener('click', () => { folderPath = []; showScreen('plan'); });
+  document.getElementById('home-sag-menu').addEventListener('click', () => openSagPicker('home'));
 
   // --- 4 store status-kort: Mangler · TS · KS · Afvist (punkt 11) ---
   const tile = (label, count, jobsKey, accent) => `
@@ -3878,7 +3884,7 @@ async function renderFolders() {
       ? folderPath.join(' / ')
       : (sag?.customer || 'Egne mapper');
     if (backBtn) backBtn.classList.toggle('hidden', folderPath.length === 0);
-    uploadText.textContent = 'Tilføj fil her';
+    uploadText.textContent = 'Tilføj fil';
     uploadLabel.style.opacity = '1'; uploadLabel.style.pointerEvents = 'auto';
 
     // Direkte undermapper på dette niveau
@@ -3982,7 +3988,7 @@ async function renderFolders() {
     ? crumbs.join(' / ')
     : (sag ? (sag.customer || 'Vælg en mappe') : 'Vælg sag');
   if (backBtn) backBtn.classList.toggle('hidden', folderPath.length === 0);
-  uploadText.textContent = folderPath.length ? `Tilføj fil til "${node ? node.name : folderPath[folderPath.length-1]}"` : 'Vælg en mappe for at tilføje fil';
+  uploadText.textContent = folderPath.length ? 'Tilføj fil' : 'Vælg mappe';
   uploadLabel.style.opacity = folderPath.length ? '1' : '0.5';
   uploadLabel.style.pointerEvents = folderPath.length ? 'auto' : 'none';
 
