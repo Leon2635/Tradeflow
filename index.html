@@ -1040,6 +1040,7 @@
       <div id="zoom-content" style="position:absolute; left:0; top:0; transform-origin: 0 0; will-change: transform;">
         <img id="zoom-img" src="" alt="Tegning" style="display:block; width:100%; pointer-events:none; user-select:none; background:#fff;">
         <svg id="zoom-annot" style="position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible;" preserveAspectRatio="none"></svg>
+        <div id="zoom-text-layer" style="position:absolute; inset:0; pointer-events:none;"></div>
         <div id="zoom-pins" style="position:absolute; inset:0; pointer-events:none;"></div>
       </div>
       <!-- Tegne-værktøjslinje (vises i tegne-tilstand) — kompakt + wrap så "Færdig" altid kan nås på mobil -->
@@ -1418,7 +1419,7 @@ async function deleteCustomCategory(key) {
 // ============================================================
 // Standard mappestruktur — neutral og licensfri (admin kan selv tilføje/ændre mapper)
 // ============================================================
-const APP_BUILD = '1.13.0 · 07-06-2026';
+const APP_BUILD = '1.14.0 · 07-06-2026';
 const DEFAULT_FOLDERS = [
   { code: 'C01', name: 'Basis' },
   { code: 'C02', name: 'Aftaler' },
@@ -3490,7 +3491,7 @@ async function openFileActions(tegningId, fromViewer) {
   const isPdfFile = t.type === 'pdf' || ext === 'pdf';
   let html = '';
   if (!fromViewer) html += item('open', 'Åbn', '👁');
-  if (canDraw) { html += item('addpin', 'Tilføj markør', '📍'); html += item('draw', 'Tegn på tegningen', '✏️'); }
+  if (canDraw) { html += item('addpin', 'Tilføj markør', '📍'); html += item('draw', 'Tegn på tegningen', '✏️'); html += item('addtext', 'Tilføj tekst', '🅣'); }
   if (isPdfFile) html += item('native', 'Åbn i browser (alle sider)', '📄');
   if (admin) {
     html += item('rename', 'Rediger filnavn', '✎');
@@ -3517,7 +3518,8 @@ async function handleFileAction(act) {
   const t = await getOne('tegninger', id);
   if (!t) { closeModal('modal-file-actions'); return; }
   if (act === 'open') { closeModal('modal-file-actions'); openTegningFile(id); return; }
-  if (act === 'addpin') { closeModal('modal-file-actions'); if (zoomState.drawMode) finishDrawMode(false); zoomState.pinMode = true; toast('Tryk på tegningen for at placere markøren'); return; }
+  if (act === 'addpin') { closeModal('modal-file-actions'); if (zoomState.drawMode) finishDrawMode(false); zoomState.textMode = false; zoomState.pinMode = true; toast('Tryk på tegningen for at placere markøren'); return; }
+  if (act === 'addtext') { closeModal('modal-file-actions'); if (zoomState.drawMode) finishDrawMode(false); zoomState.pinMode = false; zoomState.textMode = true; toast('Tryk på tegningen for at placere tekst'); return; }
   if (act === 'draw') { closeModal('modal-file-actions'); startDrawMode(); return; }
   if (act === 'rename') {
     closeModal('modal-file-actions');
@@ -4223,6 +4225,7 @@ const zoomState = {
   pdfDoc: null, numPages: 1, pdfPage: 1,
   drawMode: false, drawColor: '#E11D48', strokes: [], annotations: [], _cur: null, _drawing: false,
   pinMode: false, // punkt 11: tryk placerer KUN en markør når man har valgt "Tilføj pin"
+  textMode: false, // punkt 8: tryk placerer en tekstboks når man har valgt "Tilføj tekst"
 };
 
 // ---- Tegn på tegning (annotationer) ----
@@ -4245,7 +4248,7 @@ function renderAnnotations(includeCur) {
   const svg = document.getElementById('zoom-annot');
   if (!svg || !zoomState.imgW) return;
   svg.setAttribute('viewBox', `0 0 ${zoomState.imgW} ${zoomState.imgH}`);
-  let list = (zoomState.drawMode ? zoomState.strokes : zoomState.annotations).filter(currentPageFilter);
+  let list = (zoomState.drawMode ? zoomState.strokes : zoomState.annotations).filter(currentPageFilter).filter(s => s.t !== 'text' && s.p);
   if (includeCur && zoomState._cur) list = list.concat([zoomState._cur]);
   svg.innerHTML = list.map(s => `<path d="${ptsToPath(s.p)}" fill="none" stroke="${s.c || '#E11D48'}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>`).join('');
   // Vis hvem der har tegnet (fast label)
@@ -4255,6 +4258,95 @@ function renderAnnotations(includeCur) {
     if (names.length) { byEl.textContent = '✏️ Tegnet af: ' + names.join(', '); byEl.classList.remove('hidden'); }
     else byEl.classList.add('hidden');
   }
+  renderTextLayer();
+}
+
+// Initialer fra et navn (punkt 9)
+function initials(name) {
+  const w = (name || '').trim().split(/\s+/).filter(Boolean);
+  if (!w.length) return '?';
+  return (w[0][0] + (w.length > 1 ? w[w.length - 1][0] : '')).toUpperCase();
+}
+
+// Gem annotationer (tekst + streger) direkte på tegningen og synk til skyen
+async function persistAnnotations() {
+  const t = await getOne('tegninger', state.activeTegningId);
+  if (t) { t.annotations = zoomState.annotations || []; await put('tegninger', t); }
+}
+
+// Render tekst-bokse (punkt 8) + initial-chips (punkt 9) i tekst-laget
+function renderTextLayer() {
+  const layer = document.getElementById('zoom-text-layer');
+  if (!layer || !zoomState.imgW) return;
+  const texts = (zoomState.annotations || []).filter(s => s.t === 'text' && currentPageFilter(s));
+  layer.innerHTML = '';
+  texts.forEach(item => {
+    const editable = canRemoveStroke(item); // egen tekst eller admin
+    const fs = item.size || Math.max(20, Math.round(zoomState.imgW * 0.03));
+    const wrap = document.createElement('div');
+    wrap.className = 'zoom-textitem';
+    wrap.style.cssText = `position:absolute; left:${item.x * zoomState.imgW}px; top:${item.y * zoomState.imgH}px; transform:translate(-50%,-50%); pointer-events:${editable ? 'auto' : 'none'}; touch-action:none; cursor:${editable ? 'move' : 'default'}; width:max-content; max-width:${zoomState.imgW * 0.7}px; text-align:center;`;
+    wrap.innerHTML = `<div style="color:${item.c || '#111827'}; font-size:${fs}px; font-weight:700; line-height:1.15; white-space:pre-wrap; word-break:break-word; text-shadow:0 1px 3px rgba(255,255,255,0.9),0 0 2px rgba(255,255,255,0.9);">${escapeHtml(item.text || '')}</div>`;
+    if (item.by) {
+      const cs = Math.max(13, Math.round(fs * 0.5));
+      const chip = document.createElement('div');
+      chip.style.cssText = `position:absolute; left:-4px; top:${-cs - 8}px; background:#F5B301; color:#1A1303; font-weight:800; font-size:${cs}px; line-height:1; border-radius:999px; padding:3px 6px; white-space:nowrap; box-shadow:0 1px 3px rgba(0,0,0,0.35);`;
+      chip.textContent = initials(item.by);
+      wrap.appendChild(chip);
+    }
+    if (editable) attachTextDrag(wrap, item);
+    layer.appendChild(wrap);
+  });
+}
+
+// Træk for at flytte · tryk for at redigere/slette (kun egen/admin)
+function attachTextDrag(el, item) {
+  el.addEventListener('pointerdown', e => {
+    e.stopPropagation(); e.preventDefault();
+    const sx = e.clientX, sy = e.clientY, ox = item.x, oy = item.y;
+    let moved = false;
+    const move = ev => {
+      if (Math.abs(ev.clientX - sx) + Math.abs(ev.clientY - sy) > 4) moved = true;
+      const dx = (ev.clientX - sx) / zoomState.scale / zoomState.imgW;
+      const dy = (ev.clientY - sy) / zoomState.scale / zoomState.imgH;
+      item.x = Math.min(1, Math.max(0, ox + dx));
+      item.y = Math.min(1, Math.max(0, oy + dy));
+      el.style.left = (item.x * zoomState.imgW) + 'px';
+      el.style.top = (item.y * zoomState.imgH) + 'px';
+    };
+    const up = async () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      if (moved) await persistAnnotations();
+      else editTextItem(item);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  });
+}
+
+async function editTextItem(item) {
+  const val = prompt('Redigér tekst (tøm feltet for at slette):', item.text || '');
+  if (val === null) return;
+  if (!val.trim()) {
+    zoomState.annotations = (zoomState.annotations || []).filter(a => a !== item);
+    await persistAnnotations(); renderAnnotations(); toast('Tekst slettet');
+    return;
+  }
+  item.text = val;
+  await persistAnnotations(); renderAnnotations();
+}
+
+async function placeTextAtScreen(clientX, clientY) {
+  const r = document.getElementById('zoom-container').getBoundingClientRect();
+  const fx = ((clientX - r.left - zoomState.tx) / zoomState.scale) / zoomState.imgW;
+  const fy = ((clientY - r.top - zoomState.ty) / zoomState.scale) / zoomState.imgH;
+  if (fx < 0 || fx > 1 || fy < 0 || fy > 1) { toast('Tryk inden for selve tegningen'); return; }
+  const val = prompt('Skriv tekst:', '');
+  if (val === null || !val.trim()) return;
+  const item = { t: 'text', x: fx, y: fy, text: val, c: '#111827', pg: zoomState.pdfDoc ? zoomState.pdfPage : 1, by: currentProfile?.name || '', uid: currentProfile?.id || '', size: Math.max(20, Math.round(zoomState.imgW * 0.03)) };
+  zoomState.annotations = (zoomState.annotations || []).concat([item]);
+  await persistAnnotations(); renderAnnotations(); toast('Tekst tilføjet');
 }
 function pointerToImg(clientX, clientY) {
   const r = document.getElementById('zoom-container').getBoundingClientRect();
@@ -4287,8 +4379,9 @@ function drawEnd() {
 }
 function startDrawMode() {
   zoomState.drawMode = true;
-  zoomState.pinMode = false; // tegne-tilstand og pin-tilstand udelukker hinanden (punkt 11)
-  zoomState.strokes = (zoomState.annotations || []).map(s => ({ ...s, p: s.p.slice() })); // redigerbar kopi
+  zoomState.pinMode = false; zoomState.textMode = false; // tilstande udelukker hinanden (punkt 11)
+  // kun streger er redigerbare i tegne-tilstand (tekst-bokse bevares uændret)
+  zoomState.strokes = (zoomState.annotations || []).filter(s => s.t !== 'text' && s.p).map(s => ({ ...s, p: s.p.slice() }));
   document.getElementById('zoom-draw-bar').classList.remove('hidden');
   document.getElementById('zoom-pins').style.display = 'none';
   document.getElementById('zoom-pin-hint').classList.add('hidden');
@@ -4300,7 +4393,13 @@ function startDrawMode() {
 async function finishDrawMode(save) {
   if (save) {
     const t = await getOne('tegninger', state.activeTegningId);
-    if (t) { t.annotations = zoomState.strokes; await put('tegninger', t); zoomState.annotations = zoomState.strokes; toast('Tegning gemt'); }
+    if (t) {
+      // bevar tekst-bokse + flet med de (redigerede) streger
+      const texts = (zoomState.annotations || []).filter(s => s.t === 'text');
+      const merged = [...texts, ...zoomState.strokes];
+      t.annotations = merged; zoomState.annotations = merged;
+      await put('tegninger', t); toast('Tegning gemt');
+    }
   }
   zoomState.drawMode = false; zoomState._cur = null; zoomState._drawing = false;
   document.getElementById('zoom-draw-bar').classList.add('hidden');
@@ -4366,7 +4465,7 @@ async function openZoomViewer() {
   if (!tegning) return;
   document.getElementById('zoom-title').textContent = tegning.name || 'Tegning';
   zoomState.pdfDoc = null; zoomState.numPages = 1; zoomState.pdfPage = 1;
-  zoomState.annotations = tegning.annotations || []; zoomState.drawMode = false; zoomState.pinMode = false; zoomState._cur = null;
+  zoomState.annotations = tegning.annotations || []; zoomState.drawMode = false; zoomState.pinMode = false; zoomState.textMode = false; zoomState._cur = null;
   document.getElementById('zoom-pagenav').classList.add('hidden');
   document.getElementById('zoom-draw-bar').classList.add('hidden');
   document.getElementById('zoom-annot-by').classList.add('hidden');
@@ -4513,6 +4612,7 @@ async function renderZoomPins() {
       <svg width="${32*pinScale}" height="${38*pinScale}" viewBox="0 0 32 38" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));">
         <path d="M16 2 C7 2 3 8 3 14 C3 23 16 36 16 36 C16 36 29 23 29 14 C29 8 25 2 16 2 Z" fill="${info.dotColor}" stroke="#fff" stroke-width="2.5"/>
         <text x="16" y="18" text-anchor="middle" font-size="14" font-weight="700" fill="#fff" font-family="Inter">${symbol}</text>
+        ${p.createdByName ? `<rect x="18" y="0" width="14" height="10" rx="5" fill="#F5B301" stroke="#1A1303" stroke-width="0.8"/><text x="25" y="7.7" text-anchor="middle" font-size="7" font-weight="800" fill="#1A1303" font-family="Inter">${escapeHtml(initials(p.createdByName))}</text>` : ''}
       </svg>`;
     el.addEventListener('click', ev => { ev.stopPropagation(); closeModal('modal-zoom'); openExistingPin(p.id); });
     overlay.appendChild(el);
@@ -4561,6 +4661,8 @@ function setupZoomViewer() {
   container.addEventListener('touchstart', e => {
     // Lad tryk på tegne-værktøjslinjen (Ryd/Fortryd/Færdig/farver) slippe igennem til knapperne
     if (e.target.closest && e.target.closest('#zoom-draw-bar')) return;
+    // Tekst-boks håndterer selv træk/redigering (punkt 8) — lad container'en være
+    if (e.target.closest && e.target.closest('.zoom-textitem')) { zoomState.panning = false; tTap = false; return; }
     if (zoomState.drawMode) {
       if (e.touches.length === 1) { e.preventDefault(); drawStart(e.touches[0].clientX, e.touches[0].clientY); return; }
       if (zoomState._drawing) drawEnd(); // anden finger → afslut streg, lad zoom køre
@@ -4609,10 +4711,14 @@ function setupZoomViewer() {
     if (zoomState.drawMode) { if (zoomState._drawing) drawEnd(); return; }
     if (e.touches.length === 0) {
       renderZoomPins();
-      // Et rent, hurtigt tryk placerer KUN en markør hvis pin-tilstand er valgt (punkt 11)
-      if (zoomState.pinMode && tTap && !tOnPin && (Date.now() - tStartT) < 700 && e.changedTouches.length) {
+      // Et rent, hurtigt tryk udfører KUN den valgte handling (punkt 11)
+      const cleanTap = tTap && !tOnPin && (Date.now() - tStartT) < 700 && e.changedTouches.length;
+      if (cleanTap && zoomState.pinMode) {
         zoomState.pinMode = false;
         placePinAtScreen(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+      } else if (cleanTap && zoomState.textMode) {
+        zoomState.textMode = false;
+        placeTextAtScreen(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
       }
       tTap = false;
     }
@@ -4630,6 +4736,7 @@ function setupZoomViewer() {
   // --- DESKTOP: klik = pin / træk = panorér ---
   let mDown = false, mMoved = 0, mOnPin = false;
   container.addEventListener('mousedown', e => {
+    if (e.target.closest && e.target.closest('.zoom-textitem')) return; // tekst håndterer selv træk
     if (zoomState.drawMode) { drawStart(e.clientX, e.clientY); return; }
     mDown = true; mMoved = 0;
     mOnPin = !!(e.target.closest && e.target.closest('.zoom-pin'));
@@ -4649,8 +4756,11 @@ function setupZoomViewer() {
     if (zoomState.drawMode) { if (zoomState._drawing) drawEnd(); return; }
     if (!mDown) return;
     mDown = false; container.style.cursor = 'grab'; renderZoomPins();
-    // Rent klik placerer KUN en markør hvis pin-tilstand er valgt (punkt 11)
-    if (zoomState.pinMode && mMoved < 6 && !mOnPin) { zoomState.pinMode = false; placePinAtScreen(e.clientX, e.clientY); }
+    // Rent klik udfører KUN den valgte handling (punkt 11)
+    if (mMoved < 6 && !mOnPin) {
+      if (zoomState.pinMode) { zoomState.pinMode = false; placePinAtScreen(e.clientX, e.clientY); }
+      else if (zoomState.textMode) { zoomState.textMode = false; placeTextAtScreen(e.clientX, e.clientY); }
+    }
   });
   container.style.cursor = 'grab';
 
@@ -4708,6 +4818,8 @@ async function openNewPin(x, y) {
     photos: [], // array of File objects, persisted on save
     gpsLat: state.currentGPS?.lat,
     gpsLng: state.currentGPS?.lng,
+    createdByName: currentProfile?.name || '', // punkt 9: hvem oprettede markøren
+    createdById: currentProfile?.id || '',
     createdAt: Date.now(),
   };
   await renderPinModal();
@@ -6232,6 +6344,7 @@ async function _cloudUpsert(store, value, u) {
       deadline: value.deadline ? new Date(value.deadline).toISOString() : null,
       completed_at: value.completedAt ? new Date(value.completedAt).toISOString() : null,
       completed_by_name: value.completedByName || null,
+      created_by_name: value.createdByName || null, created_by_id: value.createdById || null,
       gps_lat: value.gpsLat || null, gps_lng: value.gpsLng || null,
       created_at: new Date(value.createdAt || Date.now()).toISOString(),
     });
@@ -6483,6 +6596,8 @@ async function cloudPullAll() {
         deadline: p.deadline ? new Date(p.deadline).getTime() : null,
         completedAt: p.completed_at ? new Date(p.completed_at).getTime() : null,
         completedByName: p.completed_by_name || '',
+        createdByName: p.created_by_name || '',
+        createdById: p.created_by_id || null,
         gpsLat: p.gps_lat ? Number(p.gps_lat) : undefined,
         gpsLng: p.gps_lng ? Number(p.gps_lng) : undefined,
         createdAt: p.created_at ? new Date(p.created_at).getTime() : Date.now()
