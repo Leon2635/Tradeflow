@@ -1395,7 +1395,7 @@ async function deleteCustomCategory(key) {
 // ============================================================
 // Standard mappestruktur — neutral og licensfri (admin kan selv tilføje/ændre mapper)
 // ============================================================
-const APP_BUILD = '1.9.0 · 07-06-2026';
+const APP_BUILD = '1.9.1 · 07-06-2026';
 const DEFAULT_FOLDERS = [
   { code: 'C01', name: 'Basis' },
   { code: 'C02', name: 'Aftaler' },
@@ -3204,6 +3204,7 @@ async function saveTegningWithCategory(category) {
   }
   const picker = document.getElementById('modal-tegning-picker');
   if (picker && !picker.classList.contains('hidden')) closeModal('modal-tegning-picker');
+  _sizeMap.sagId = null; // tving genindlæsning af filstørrelser så nye filer viser MB med det samme
   renderPlan();
 }
 
@@ -3719,6 +3720,32 @@ function openFilesMenu() {
   openModal('modal-file-actions');
 }
 
+// Filstørrelser hentes fra skyen (så de vises på ALLE enheder, ikke kun den der uploadede)
+let _sizeMap = { sagId: null, byName: {}, ts: 0 };
+async function loadStorageSizes(sagId) {
+  if (!sagId) return;
+  if (_sizeMap.sagId === sagId && Date.now() - _sizeMap.ts < 15000) return; // let cache (undgå spam ved auto-sync)
+  const byName = {};
+  try {
+    const u = await getCurrentUser();
+    if (u?.orgId) {
+      const { data } = await supa.storage.from('uploads').list(`org_${u.orgId}/sag_${sagId}`, { limit: 1000 });
+      (data || []).forEach(f => { const sz = f && f.metadata && f.metadata.size; if (f && f.name && sz != null) byName[f.name] = sz; });
+    }
+  } catch (e) { console.warn('storage sizes', e); }
+  _sizeMap = { sagId, byName, ts: Date.now() };
+}
+function fmtBytes(b) {
+  if (!b || b < 1) return '';
+  return b >= 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB';
+}
+function fileSizeLabel(t) {
+  let b = t.originalSize || 0;
+  if (!b) { const base = p => p ? p.split('/').pop() : null; b = _sizeMap.byName[base(t.original_storage_path)] || _sizeMap.byName[base(t.storage_path)] || 0; }
+  if (!b && (t.originalBlob || t.blob)) b = (t.originalBlob || t.blob).size || 0;
+  return fmtBytes(b);
+}
+
 function renderFolderFiles(filesDiv, here) {
   if (here.length === 0) {
     fileSelectMode = false; selectedFileIds.clear();
@@ -3755,7 +3782,8 @@ function renderFolderFiles(filesDiv, here) {
     const openHint = (t.blob != null || t.type === 'pdf' || fx === 'pdf' || t.type === 'image' || t.storage_path) ? 'Åbn tegning'
       : (fx === 'ifc' ? 'Åbn 3D-model' : (['rvt', 'dwg'].includes(fx) ? 'Download' : ''));
     const icon = `<div class="w-9 h-9 rounded-md bg-soft text-ink-700 flex items-center justify-center shrink-0 font-bold text-[10px]">${escapeHtml((t.type || 'fil').toUpperCase().slice(0, 3))}</div>`;
-    const info = `<div class="flex-1 min-w-0"><div class="text-sm font-semibold text-ink-900 break-words leading-snug">${escapeHtml(t.name)}</div><div class="text-[11px] text-ink-500 mt-0.5">${dateStr}${openHint ? ' · ' + openHint : ''}</div></div>`;
+    const szStr = fileSizeLabel(t);
+    const info = `<div class="flex-1 min-w-0"><div class="text-sm font-semibold text-ink-900 break-words leading-snug">${escapeHtml(t.name)}</div><div class="text-[11px] text-ink-500 mt-0.5">${dateStr}${szStr ? ' · ' + szStr : ''}${openHint ? ' · ' + openHint : ''}</div></div>`;
     if (fileSelectMode && admin) {
       const checked = selectedFileIds.has(t.id);
       return `<div class="tap bg-surface border ${checked ? 'border-clay-400 bg-clay-50' : 'border-border'} rounded-xl p-3 shadow-soft mb-1.5 flex items-center gap-3" data-toggle-file="${escapeHtml(t.id)}">
@@ -3821,6 +3849,7 @@ async function renderFolders() {
   const sag = state.activeSagId ? await getOne('sager', state.activeSagId) : null;
   const useMolio = !sag || sag.useMolio !== false; // default = standard mappestruktur (bagudkompatibelt)
   const allTegninger = (state.activeSagId ? await getByIndex('tegninger', 'by_sag', state.activeSagId) : []).filter(t => !t.deleted);
+  await loadStorageSizes(state.activeSagId); // filstørrelser fra skyen (vises på alle enheder)
   const subDiv = document.getElementById('folder-subfolders');
   const filesDiv = document.getElementById('folder-files');
   const backBtn = document.getElementById('folder-back');
