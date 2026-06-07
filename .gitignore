@@ -1,0 +1,25 @@
+# Build output (generated from index.html via: cp index.html dist/index.html)
+dist/
+
+# Cloudflare / Wrangler cache & state
+.wrangler/
+
+# Local tooling / editor config
+.claude/
+node_modules/
+
+# Secrets — NEVER commit
+.env
+.env.*
+*.key
+*.pem
+secrets.*
+.dev.vars
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.log
+
+# Temp / check files
+._check.mjs

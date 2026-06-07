@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TradeFlow — Faktura, tilsyn og BIM på din lomme</title>
+<meta name="description" content="Den danske håndværker-app der kombinerer tidsregistrering, fakturering, foto-dokumentation og BIM-tilsyn med IFC/Revit. Fra 199 kr/md.">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: { extend: {
+      colors: {
+        bg: '#0A0E17', surface: '#121826', surface2: '#1A2233', border: '#222B40',
+        txt: { 100:'#F4F6FB',300:'#C3CAD8',500:'#8A93A6',700:'#5A6478' },
+        lime: { 300:'#D7FF7A',400:'#BFFF4D',500:'#A4F02A',600:'#7FC91C' },
+        ok:'#34D399', warn:'#FBBF24', bad:'#F87171',
+      },
+      fontFamily: { sans:['Inter','system-ui','sans-serif'], display:['Inter','sans-serif'] }
+    }}
+  }
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  html { scroll-behavior: smooth; }
+  body { background:#05080F; color:#F4F6FB; font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased; }
+  .glow-lime { box-shadow: 0 0 0 1px rgba(164,240,42,0.25), 0 20px 60px rgba(164,240,42,0.18); }
+  .hero-gradient { background: radial-gradient(800px 400px at 70% 20%, rgba(164,240,42,0.12), transparent 60%), radial-gradient(600px 500px at 20% 80%, rgba(58,98,255,0.08), transparent 60%); }
+  .glass { background: rgba(18,24,38,0.6); backdrop-filter: blur(12px); border:1px solid rgba(255,255,255,0.06); }
+  .gradient-text { background: linear-gradient(135deg, #F4F6FB 0%, #BFFF4D 60%, #F4F6FB 100%); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  details[open] summary svg { transform: rotate(180deg); }
+  summary::-webkit-details-marker { display:none; }
+  .ring-glow:hover { box-shadow: 0 0 0 1px rgba(191,255,77,0.5), 0 12px 40px rgba(191,255,77,0.15); }
+  .feature-card { transition: transform .25s ease, box-shadow .25s ease; }
+  .feature-card:hover { transform: translateY(-4px); box-shadow: 0 12px 36px rgba(0,0,0,0.4); }
+  .price-popular { box-shadow: 0 0 0 2px #BFFF4D, 0 30px 80px rgba(191,255,77,0.20); transform: scale(1.02); }
+  @keyframes pulse-soft { 0%,100%{opacity:1} 50%{opacity:.5} }
+  .pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
+  /* mini phone frame in hero */
+  .phone-mini { width: 280px; aspect-ratio: 393/852; background:#0A0E17; border-radius:36px; box-shadow: 0 0 0 8px #0A0A0E, 0 0 0 9px rgba(255,255,255,0.10), 0 40px 80px rgba(0,0,0,0.6); overflow:hidden; position:relative; }
+  .phone-mini .island { position:absolute; top:8px; left:50%; transform:translateX(-50%); width:80px; height:24px; background:#000; border-radius:999px; z-index:10; }
+</style>
+</head>
+<body class="hero-gradient">
+
+<!-- ================ NAV ================ -->
+<nav class="fixed top-0 left-0 right-0 z-50 glass border-b border-border">
+  <div class="max-w-6xl mx-auto px-5 py-3 flex items-center justify-between">
+    <a href="#" class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-lg bg-lime-400 flex items-center justify-center">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0A0E17" stroke-width="2.5" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      </div>
+      <span class="font-bold text-lg tracking-tight">TradeFlow</span>
+    </a>
+    <div class="hidden md:flex items-center gap-7 text-sm text-txt-300">
+      <a href="#features" class="hover:text-txt-100 transition">Funktioner</a>
+      <a href="#bim" class="hover:text-txt-100 transition">BIM & Tegninger</a>
+      <a href="#pricing" class="hover:text-txt-100 transition">Priser</a>
+      <a href="#faq" class="hover:text-txt-100 transition">FAQ</a>
+    </div>
+    <div class="flex items-center gap-2">
+      <a href="#" class="hidden md:inline text-sm text-txt-300 hover:text-txt-100 px-3 py-2">Log ind</a>
+      <a href="#pricing" class="bg-lime-400 hover:bg-lime-300 text-bg font-bold text-sm px-4 py-2.5 rounded-lg transition">Start gratis</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ================ HERO ================ -->
+<section class="pt-32 pb-20 px-5">
+  <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-10 items-center">
+    <div>
+      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-lime-400/10 border border-lime-400/30 text-lime-400 text-xs font-semibold mb-5">
+        <span class="w-1.5 h-1.5 rounded-full bg-lime-400 pulse-soft"></span>
+        Nyt: IFC + Revit-import nu med GPS-pins
+      </div>
+      <h1 class="text-5xl md:text-6xl font-black tracking-tight leading-[1.05] mb-5">
+        Faktura, tilsyn og <span class="gradient-text">BIM</span> — alt på din lomme.
+      </h1>
+      <p class="text-lg text-txt-300 mb-7 leading-relaxed">
+        Den danske håndværker-app der erstatter Excel, Dropbox og papir-notesblok.
+        Tidsregistrering, fotodokumentation, fakturering og BIM-tilsyn på 2D/3D-tegninger med GPS — i én app.
+      </p>
+      <div class="flex flex-wrap gap-3 mb-6">
+        <a href="#pricing" class="bg-lime-400 hover:bg-lime-300 text-bg font-bold px-6 py-3.5 rounded-xl transition glow-lime">Prøv gratis i 14 dage</a>
+        <a href="index.html" class="bg-surface border border-border hover:border-lime-400/50 text-txt-100 font-semibold px-6 py-3.5 rounded-xl transition flex items-center gap-2">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Se appen i preview
+        </a>
+      </div>
+      <div class="flex items-center gap-5 text-xs text-txt-500">
+        <span class="flex items-center gap-1.5"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Intet kreditkort</span>
+        <span class="flex items-center gap-1.5"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Dansk support</span>
+        <span class="flex items-center gap-1.5"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>GDPR · EU-server</span>
+      </div>
+    </div>
+
+    <!-- Phone mockup -->
+    <div class="flex justify-center md:justify-end">
+      <div class="phone-mini">
+        <div class="island"></div>
+        <div class="pt-12 px-5">
+          <div class="text-[9px] uppercase tracking-wider text-txt-500 font-medium">God morgen</div>
+          <div class="text-base font-semibold text-txt-100 mb-3">Mikkel Sørensen</div>
+          <div class="bg-gradient-to-br from-lime-400/15 to-transparent border border-lime-400/30 rounded-xl p-3 mb-3">
+            <div class="flex items-center gap-1.5 mb-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-lime-400 pulse-soft"></span>
+              <span class="text-[9px] uppercase tracking-wider text-lime-400 font-semibold">Tid kører</span>
+            </div>
+            <div class="text-2xl font-bold tabular-nums text-txt-100">02:14:48</div>
+            <div class="text-[10px] text-txt-300 mt-0.5">Nyt badeværelse — Hansens Vej 12</div>
+          </div>
+          <div class="grid grid-cols-3 gap-1.5">
+            <div class="bg-surface rounded-lg p-2 border border-border"><div class="text-[8px] uppercase text-txt-500">I dag</div><div class="text-sm font-bold">6,2t</div></div>
+            <div class="bg-surface rounded-lg p-2 border border-border"><div class="text-[8px] uppercase text-txt-500">Uge</div><div class="text-sm font-bold">28,5t</div></div>
+            <div class="bg-surface rounded-lg p-2 border border-border"><div class="text-[8px] uppercase text-txt-500">Ufakt.</div><div class="text-sm font-bold">18.420</div></div>
+          </div>
+          <div class="mt-3 text-[9px] font-semibold text-txt-100">Sager i dag</div>
+          <div class="mt-1.5 space-y-1.5">
+            <div class="bg-surface border border-border rounded-lg p-2 flex items-center gap-2">
+              <div class="w-6 h-6 rounded bg-lime-400/15 text-lime-400 text-[8px] font-bold flex items-center justify-center border border-lime-400/20">HV</div>
+              <div class="flex-1 text-[10px] truncate">Hansens Vej 12</div>
+              <span class="text-[8px] bg-lime-400/15 text-lime-400 px-1.5 py-0.5 rounded border border-lime-400/20">I gang</span>
+            </div>
+            <div class="bg-surface border border-border rounded-lg p-2 flex items-center gap-2">
+              <div class="w-6 h-6 rounded bg-surface2 text-txt-300 text-[8px] font-bold flex items-center justify-center border border-border">LP</div>
+              <div class="flex-1 text-[10px] truncate">Lindevej 4</div>
+              <span class="text-[8px] bg-surface2 text-txt-300 px-1.5 py-0.5 rounded border border-border">Næste</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Trust strip -->
+  <div class="max-w-5xl mx-auto mt-20 text-center">
+    <div class="text-xs uppercase tracking-wider text-txt-500 mb-5 font-semibold">Brugt af håndværkere over hele Danmark</div>
+    <div class="flex flex-wrap items-center justify-center gap-x-10 gap-y-4 text-txt-700 font-bold text-lg">
+      <span>Holm VVS</span>
+      <span>Nordjysk El</span>
+      <span>Bjerg Tømrer</span>
+      <span>KH Murerfirma</span>
+      <span>VestEgnens Maler</span>
+      <span>Bygma+</span>
+    </div>
+  </div>
+</section>
+
+<!-- ================ FEATURES ================ -->
+<section id="features" class="py-20 px-5 border-t border-border">
+  <div class="max-w-6xl mx-auto">
+    <div class="max-w-2xl mb-14">
+      <div class="text-xs uppercase tracking-wider text-lime-400 font-semibold mb-3">Funktioner</div>
+      <h2 class="text-4xl md:text-5xl font-black tracking-tight mb-4">Alt du har brug for ude på pladsen.</h2>
+      <p class="text-lg text-txt-300">Ingen mere papirroderi. Tag tiden, dokumentér med foto, fakturér når sagen er færdig. Hele arbejdsdagen styres fra én skærm.</p>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="feature-card bg-surface border border-border rounded-2xl p-6">
+        <div class="w-12 h-12 rounded-xl bg-lime-400/10 border border-lime-400/20 text-lime-400 flex items-center justify-center mb-4">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        </div>
+        <h3 class="text-lg font-bold mb-2">Tidsregistrering med ét tryk</h3>
+        <p class="text-sm text-txt-300 leading-relaxed">Start timer på sagen direkte fra forsiden. Automatisk pause-detektering og kørsels-tracking via GPS.</p>
+      </div>
+
+      <div class="feature-card bg-surface border border-border rounded-2xl p-6">
+        <div class="w-12 h-12 rounded-xl bg-lime-400/10 border border-lime-400/20 text-lime-400 flex items-center justify-center mb-4">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </div>
+        <h3 class="text-lg font-bold mb-2">Foto-dokumentation</h3>
+        <p class="text-sm text-txt-300 leading-relaxed">Tag før/under/efter-fotos der auto-tagges med sag, GPS og tidsstempel. Perfekt til kunde-bevis og forsikring.</p>
+      </div>
+
+      <div class="feature-card bg-surface border border-border rounded-2xl p-6">
+        <div class="w-12 h-12 rounded-xl bg-lime-400/10 border border-lime-400/20 text-lime-400 flex items-center justify-center mb-4">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
+        </div>
+        <h3 class="text-lg font-bold mb-2">Faktura på 2 klik</h3>
+        <p class="text-sm text-txt-300 leading-relaxed">Auto-genereret fra registreret tid + materialer. Sendes via e-Boks/mail. SKAT-godkendt formatering.</p>
+      </div>
+
+      <div class="feature-card bg-surface border border-border rounded-2xl p-6">
+        <div class="w-12 h-12 rounded-xl bg-lime-400/10 border border-lime-400/20 text-lime-400 flex items-center justify-center mb-4">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <h3 class="text-lg font-bold mb-2">GPS-stedfæstede tilsyn</h3>
+        <p class="text-sm text-txt-300 leading-relaxed">Drop pin på tegningen ved din nøjagtige position. Tilsyn og tekniske forespørgsler får automatisk koordinat.</p>
+      </div>
+
+      <div class="feature-card bg-surface border border-border rounded-2xl p-6">
+        <div class="w-12 h-12 rounded-xl bg-lime-400/10 border border-lime-400/20 text-lime-400 flex items-center justify-center mb-4">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+        </div>
+        <h3 class="text-lg font-bold mb-2">IFC og Revit-import</h3>
+        <p class="text-sm text-txt-300 leading-relaxed">Importér 3D-modeller fra arkitekt/ingeniør. Navigér i bygningen direkte i appen og match GPS til model.</p>
+      </div>
+
+      <div class="feature-card bg-surface border border-border rounded-2xl p-6">
+        <div class="w-12 h-12 rounded-xl bg-lime-400/10 border border-lime-400/20 text-lime-400 flex items-center justify-center mb-4">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <h3 class="text-lg font-bold mb-2">PDF-tilsynsrapporter</h3>
+        <p class="text-sm text-txt-300 leading-relaxed">Generér professionel PDF-rapport med tegning, pins, fotos og GPS-koordinater. Brand-customizable letterhead.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================ BIM SECTION ================ -->
+<section id="bim" class="py-24 px-5 border-t border-border bg-surface/30">
+  <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+    <div>
+      <div class="text-xs uppercase tracking-wider text-lime-400 font-semibold mb-3">BIM på pladsen</div>
+      <h2 class="text-4xl md:text-5xl font-black tracking-tight mb-4 leading-tight">
+        IFC og Revit i lommen — uden BIM-uddannelse.
+      </h2>
+      <p class="text-lg text-txt-300 mb-7">
+        Modtag .ifc, .rvt eller .dwg fra arkitekt og ingeniør. TradeFlow konverterer og viser modellen direkte i appen. Filtrér på discipliner (Arkitektur, VVS, El, Konstruktion) og placér tilsyn på den faktiske element-koordinat.
+      </p>
+      <ul class="space-y-3 mb-7">
+        <li class="flex items-start gap-3"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" stroke-linecap="round" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg><span><strong class="text-txt-100">IFC 4 / IFC 2x3</strong> — fuld støtte for åben BIM-standard</span></li>
+        <li class="flex items-start gap-3"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" stroke-linecap="round" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg><span><strong class="text-txt-100">Revit 2022–2025</strong> — auto-konvertering til IFC i skyen</span></li>
+        <li class="flex items-start gap-3"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" stroke-linecap="round" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg><span><strong class="text-txt-100">BCF 3.0 eksport</strong> — pins og kommentarer tilbage til Revit/ArchiCAD</span></li>
+        <li class="flex items-start gap-3"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" stroke-linecap="round" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg><span><strong class="text-txt-100">Dalux & BIM360 sync</strong> — to-vejs synkronisering (Business-plan)</span></li>
+      </ul>
+    </div>
+    <div class="bg-bg border border-border rounded-2xl p-5 glow-lime">
+      <div class="text-xs uppercase tracking-wider text-lime-400 font-semibold mb-3">Live IFC viewer</div>
+      <svg viewBox="0 0 400 280" class="w-full">
+        <defs>
+          <linearGradient id="wf1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2A3447"/><stop offset="100%" stop-color="#1A2233"/></linearGradient>
+          <linearGradient id="ws1" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#222B40"/><stop offset="100%" stop-color="#151B2A"/></linearGradient>
+        </defs>
+        <rect width="400" height="280" fill="#0B1118"/>
+        <g transform="translate(200,200)">
+          <polygon points="0,-50 140,30 0,110 -140,30" fill="#0F1422" stroke="#222B40"/>
+        </g>
+        <g transform="translate(200,150)">
+          <polygon points="0,0 0,60 110,5 110,-55" fill="url(#ws1)" stroke="#3A4763"/>
+          <polygon points="0,0 0,60 -110,5 -110,-55" fill="url(#wf1)" stroke="#3A4763"/>
+          <polygon points="0,-55 110,-55 0,-110 -110,-55" fill="#1F2A40" stroke="#3A4763"/>
+        </g>
+        <g transform="translate(200,90)">
+          <polygon points="0,0 0,60 110,5 110,-55" fill="url(#ws1)" stroke="#BFFF4D" stroke-width="0.8"/>
+          <polygon points="0,0 0,60 -110,5 -110,-55" fill="url(#wf1)" stroke="#BFFF4D" stroke-width="0.8"/>
+          <polygon points="0,-55 110,-55 0,-110 -110,-55" fill="#1F2A40" stroke="#BFFF4D" stroke-width="0.8"/>
+        </g>
+        <g transform="translate(155,75)">
+          <path d="M 0 -10 C -7 -10 -10 -5 -10 0 C -10 6 0 14 0 14 C 0 14 10 6 10 0 C 10 -5 7 -10 0 -10 Z" fill="#BFFF4D" stroke="#0A0E17" stroke-width="1.5"/>
+          <text x="0" y="2" text-anchor="middle" font-size="7" font-weight="700" fill="#0A0E17">!</text>
+        </g>
+        <g transform="translate(255,110)">
+          <path d="M 0 -10 C -7 -10 -10 -5 -10 0 C -10 6 0 14 0 14 C 0 14 10 6 10 0 C 10 -5 7 -10 0 -10 Z" fill="#FBBF24" stroke="#0A0E17" stroke-width="1.5"/>
+          <text x="0" y="2" text-anchor="middle" font-size="7" font-weight="700" fill="#0A0E17">?</text>
+        </g>
+      </svg>
+      <div class="grid grid-cols-3 gap-2 mt-4 text-[10px]">
+        <div class="bg-surface border border-border rounded-lg p-2"><div class="uppercase text-txt-500 mb-0.5">Elementer</div><div class="font-bold text-txt-100 tabular-nums">142</div></div>
+        <div class="bg-surface border border-border rounded-lg p-2"><div class="uppercase text-txt-500 mb-0.5">Discipliner</div><div class="font-bold text-txt-100">5</div></div>
+        <div class="bg-surface border border-border rounded-lg p-2"><div class="uppercase text-txt-500 mb-0.5">Pins</div><div class="font-bold text-lime-400">4 åbne</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================ PRICING ================ -->
+<section id="pricing" class="py-24 px-5 border-t border-border">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-12">
+      <div class="text-xs uppercase tracking-wider text-lime-400 font-semibold mb-3">Priser</div>
+      <h2 class="text-4xl md:text-5xl font-black tracking-tight mb-4">Simpel pris pr. bruger.</h2>
+      <p class="text-lg text-txt-300 max-w-xl mx-auto">Ingen skjulte gebyrer. Faktureres månedligt eller årligt (2 mdr. gratis). Alle priser ekskl. moms.</p>
+
+      <div class="inline-flex items-center gap-1 mt-7 p-1 bg-surface border border-border rounded-xl">
+        <button id="btn-monthly" class="px-4 py-2 rounded-lg text-sm font-semibold bg-lime-400 text-bg">Månedligt</button>
+        <button id="btn-yearly" class="px-4 py-2 rounded-lg text-sm font-semibold text-txt-300">Årligt <span class="text-lime-400 text-xs ml-1">−17%</span></button>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto">
+      <!-- Solo -->
+      <div class="bg-surface border border-border rounded-2xl p-7 ring-glow transition">
+        <div class="text-xs uppercase tracking-wider text-txt-500 font-bold mb-2">Solo</div>
+        <h3 class="text-2xl font-black mb-1">Den selvstændige</h3>
+        <p class="text-sm text-txt-500 mb-6">Til håndværkeren der arbejder alene.</p>
+        <div class="mb-7">
+          <span class="text-5xl font-black tabular-nums" data-price data-monthly="199" data-yearly="166">199</span>
+          <span class="text-txt-500 text-sm"> kr/md</span>
+        </div>
+        <a href="#" class="block w-full text-center bg-surface2 border border-border hover:border-lime-400/50 text-txt-100 font-bold py-3.5 rounded-xl mb-7 transition">Start gratis prøve</a>
+        <ul class="space-y-2.5 text-sm text-txt-300">
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>1 bruger</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>Tidsregistrering + GPS-kørsel</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>Foto-dokumentation</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>Fakturering via e-Boks + mail</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>Op til 25 aktive sager</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>10 GB cloud lager</li>
+          <li class="flex gap-2 text-txt-500"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5A6478" stroke-width="2.5" class="shrink-0 mt-0.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>BIM / tegninger</li>
+        </ul>
+      </div>
+
+      <!-- Pro (POPULAR) -->
+      <div class="relative bg-surface border border-lime-400 rounded-2xl p-7 price-popular">
+        <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-lime-400 text-bg text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full">Mest populær</div>
+        <div class="text-xs uppercase tracking-wider text-lime-400 font-bold mb-2">Pro</div>
+        <h3 class="text-2xl font-black mb-1">Det lille firma</h3>
+        <p class="text-sm text-txt-300 mb-6">Til hold på 2–10. Alt med BIM-tilsyn.</p>
+        <div class="mb-7">
+          <span class="text-5xl font-black tabular-nums text-lime-400" data-price data-monthly="399" data-yearly="332">399</span>
+          <span class="text-txt-300 text-sm"> kr/md/bruger</span>
+        </div>
+        <a href="#" class="block w-full text-center bg-lime-400 hover:bg-lime-300 text-bg font-black py-3.5 rounded-xl mb-7 transition">Start gratis prøve</a>
+        <ul class="space-y-2.5 text-sm text-txt-100">
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg><strong>Alt fra Solo, plus:</strong></li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>2–10 brugere</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>2D-tegninger (PDF) med GPS-pins</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>Tilsyn + tekniske forespørgsler</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>PDF-tilsynsrapporter med branding</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>Ubegrænset sager · 100 GB lager</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>Hold-kalender og opgavefordeling</li>
+        </ul>
+      </div>
+
+      <!-- Business -->
+      <div class="bg-surface border border-border rounded-2xl p-7 ring-glow transition">
+        <div class="text-xs uppercase tracking-wider text-txt-500 font-bold mb-2">Business</div>
+        <h3 class="text-2xl font-black mb-1">Entreprenøren</h3>
+        <p class="text-sm text-txt-500 mb-6">Til større firmaer der arbejder i BIM.</p>
+        <div class="mb-7">
+          <span class="text-5xl font-black tabular-nums" data-price data-monthly="699" data-yearly="582">699</span>
+          <span class="text-txt-500 text-sm"> kr/md/bruger</span>
+        </div>
+        <a href="#" class="block w-full text-center bg-surface2 border border-border hover:border-lime-400/50 text-txt-100 font-bold py-3.5 rounded-xl mb-7 transition">Kontakt salg</a>
+        <ul class="space-y-2.5 text-sm text-txt-300">
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg><strong class="text-txt-100">Alt fra Pro, plus:</strong></li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>Ubegrænset brugere</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>IFC + Revit-import (.ifc/.rvt)</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>3D-modelvisning + discipliner</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>BCF-eksport · Dalux/BIM360 sync</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>1 TB lager · SLA 99,9%</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>API + SSO · dedikeret support</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="text-center text-xs text-txt-500 mt-8">Ikke sikker? Alle planer har 14 dages gratis prøve uden kreditkort. Afbestil når som helst.</p>
+  </div>
+</section>
+
+<!-- ================ TESTIMONIAL ================ -->
+<section class="py-20 px-5 border-t border-border bg-surface/30">
+  <div class="max-w-4xl mx-auto text-center">
+    <svg width="40" height="32" viewBox="0 0 40 32" fill="#BFFF4D" class="mx-auto mb-6 opacity-70"><path d="M0 32V20C0 9 6 1.5 18 0v8c-5 1.5-8 5-8 12h8v12H0zM22 32V20c0-11 6-18.5 18-20v8c-5 1.5-8 5-8 12h8v12H22z"/></svg>
+    <p class="text-2xl md:text-3xl font-medium text-txt-100 leading-snug mb-6">
+      "Vi gik fra papir-sedler og excel til TradeFlow på 2 uger. Vi sender nu fakturaer dagen efter jobbet er færdigt — det har givet os 18 dages bedre likviditet."
+    </p>
+    <div class="flex items-center justify-center gap-3">
+      <div class="w-12 h-12 rounded-full bg-gradient-to-br from-lime-400 to-lime-600 text-bg font-black flex items-center justify-center">PH</div>
+      <div class="text-left">
+        <div class="font-bold">Peter Holm</div>
+        <div class="text-sm text-txt-500">Indehaver, Holm VVS · 7 ansatte</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================ FAQ ================ -->
+<section id="faq" class="py-24 px-5 border-t border-border">
+  <div class="max-w-3xl mx-auto">
+    <div class="text-center mb-12">
+      <div class="text-xs uppercase tracking-wider text-lime-400 font-semibold mb-3">FAQ</div>
+      <h2 class="text-4xl md:text-5xl font-black tracking-tight mb-4">Spørgsmål?</h2>
+      <p class="text-lg text-txt-300">Det vi oftest får på supporten.</p>
+    </div>
+
+    <div class="space-y-3">
+      <details class="bg-surface border border-border rounded-xl group">
+        <summary class="flex items-center justify-between p-5 cursor-pointer font-semibold text-txt-100">
+          <span>Hvad sker der efter de 14 dages gratis prøve?</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="transition shrink-0 ml-3"><polyline points="6 9 12 15 18 9"/></svg>
+        </summary>
+        <div class="px-5 pb-5 text-sm text-txt-300 leading-relaxed">Du beholder fuld adgang i 14 dage uden kreditkort. Når prøven udløber går du i gang med din valgte plan — eller du kan eksportere dine data og lukke kontoen uden gebyr.</div>
+      </details>
+
+      <details class="bg-surface border border-border rounded-xl group">
+        <summary class="flex items-center justify-between p-5 cursor-pointer font-semibold text-txt-100">
+          <span>Hvor opbevares mine data?</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="transition shrink-0 ml-3"><polyline points="6 9 12 15 18 9"/></svg>
+        </summary>
+        <div class="px-5 pb-5 text-sm text-txt-300 leading-relaxed">Alle data og fotos opbevares på EU-baserede servere (Frankfurt) hos AWS/Hetzner. Vi er GDPR-compliant og udleverer DPA på anmodning. Backups hver 6. time, retention 30 dage.</div>
+      </details>
+
+      <details class="bg-surface border border-border rounded-xl group">
+        <summary class="flex items-center justify-between p-5 cursor-pointer font-semibold text-txt-100">
+          <span>Kan jeg eksportere mine data hvis jeg vil skifte system?</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="transition shrink-0 ml-3"><polyline points="6 9 12 15 18 9"/></svg>
+        </summary>
+        <div class="px-5 pb-5 text-sm text-txt-300 leading-relaxed">Ja. Du kan altid eksportere alle sager, fakturaer, fotos og pins som CSV/JSON/ZIP. BIM-pins kan også eksporteres som BCF til Revit eller ArchiCAD (Business-plan).</div>
+      </details>
+
+      <details class="bg-surface border border-border rounded-xl group">
+        <summary class="flex items-center justify-between p-5 cursor-pointer font-semibold text-txt-100">
+          <span>Virker appen offline ude på pladsen?</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="transition shrink-0 ml-3"><polyline points="6 9 12 15 18 9"/></svg>
+        </summary>
+        <div class="px-5 pb-5 text-sm text-txt-300 leading-relaxed">Ja. Tegninger og dagens sager caches lokalt. Tidsregistrering, fotos og pins synkroniseres automatisk når du får net igen — perfekt til kælderprojekter og afsides byggepladser.</div>
+      </details>
+
+      <details class="bg-surface border border-border rounded-xl group">
+        <summary class="flex items-center justify-between p-5 cursor-pointer font-semibold text-txt-100">
+          <span>Hvilke Revit-versioner understøttes?</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="transition shrink-0 ml-3"><polyline points="6 9 12 15 18 9"/></svg>
+        </summary>
+        <div class="px-5 pb-5 text-sm text-txt-300 leading-relaxed">Revit 2022, 2023, 2024 og 2025. .rvt-filer konverteres automatisk til IFC i skyen. IFC 2x3 og IFC 4 understøttes direkte uden konvertering.</div>
+      </details>
+
+      <details class="bg-surface border border-border rounded-xl group">
+        <summary class="flex items-center justify-between p-5 cursor-pointer font-semibold text-txt-100">
+          <span>Skal mine kunder også have et abonnement?</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="transition shrink-0 ml-3"><polyline points="6 9 12 15 18 9"/></svg>
+        </summary>
+        <div class="px-5 pb-5 text-sm text-txt-300 leading-relaxed">Nej. Dine kunder modtager fakturaer via mail/e-Boks som almindelige PDF'er. De kan også få et gratis kunde-login for at se sagsstatus, fotos og PDF-rapporter — det koster ikke ekstra.</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ================ FINAL CTA ================ -->
+<section class="py-24 px-5 border-t border-border">
+  <div class="max-w-4xl mx-auto text-center">
+    <h2 class="text-4xl md:text-6xl font-black tracking-tight mb-5 leading-tight">Klar til at få betalt hurtigere?</h2>
+    <p class="text-lg text-txt-300 mb-8 max-w-xl mx-auto">Start gratis prøve på 60 sekunder. Ingen kreditkort. Dansk support hvis du sidder fast.</p>
+    <div class="flex flex-wrap items-center justify-center gap-3">
+      <a href="#" class="bg-lime-400 hover:bg-lime-300 text-bg font-black px-7 py-4 rounded-xl glow-lime transition">Start gratis prøve</a>
+      <a href="#" class="bg-surface border border-border hover:border-lime-400/50 text-txt-100 font-semibold px-7 py-4 rounded-xl transition">Book demo</a>
+    </div>
+  </div>
+</section>
+
+<!-- ================ FOOTER ================ -->
+<footer class="border-t border-border py-12 px-5">
+  <div class="max-w-6xl mx-auto grid md:grid-cols-4 gap-8 text-sm">
+    <div>
+      <div class="flex items-center gap-2 mb-3">
+        <div class="w-7 h-7 rounded-lg bg-lime-400 flex items-center justify-center">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0A0E17" stroke-width="2.5" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <span class="font-bold">TradeFlow ApS</span>
+      </div>
+      <p class="text-txt-500 text-xs leading-relaxed">CVR 38449201<br>Vesterbrogade 12, 1620 København V<br>hej@tradeflow.dk · +45 70 12 34 56</p>
+    </div>
+    <div>
+      <div class="text-txt-100 font-semibold mb-3">Produkt</div>
+      <ul class="space-y-2 text-txt-500">
+        <li><a href="#features" class="hover:text-txt-100">Funktioner</a></li>
+        <li><a href="#bim" class="hover:text-txt-100">BIM & Tegninger</a></li>
+        <li><a href="#pricing" class="hover:text-txt-100">Priser</a></li>
+        <li><a href="index.html" class="hover:text-txt-100">Preview</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="text-txt-100 font-semibold mb-3">Firma</div>
+      <ul class="space-y-2 text-txt-500">
+        <li><a href="#" class="hover:text-txt-100">Om os</a></li>
+        <li><a href="#" class="hover:text-txt-100">Blog</a></li>
+        <li><a href="#" class="hover:text-txt-100">Karriere</a></li>
+        <li><a href="#" class="hover:text-txt-100">Kontakt</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="text-txt-100 font-semibold mb-3">Juridisk</div>
+      <ul class="space-y-2 text-txt-500">
+        <li><a href="#" class="hover:text-txt-100">Vilkår</a></li>
+        <li><a href="#" class="hover:text-txt-100">Privatlivspolitik</a></li>
+        <li><a href="#" class="hover:text-txt-100">Databehandleraftale</a></li>
+        <li><a href="#" class="hover:text-txt-100">Sikkerhed</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="max-w-6xl mx-auto border-t border-border mt-10 pt-6 flex flex-wrap items-center justify-between gap-3 text-xs text-txt-500">
+    <span>© 2026 TradeFlow ApS · Lavet i København</span>
+    <span class="flex items-center gap-3">
+      <span>GDPR · EU server</span>
+      <span>SOC 2 Type II (i gang)</span>
+    </span>
+  </div>
+</footer>
+
+<script>
+  const btnM = document.getElementById('btn-monthly');
+  const btnY = document.getElementById('btn-yearly');
+  function setBilling(period) {
+    const monthly = period === 'monthly';
+    btnM.classList.toggle('bg-lime-400', monthly);
+    btnM.classList.toggle('text-bg', monthly);
+    btnM.classList.toggle('text-txt-300', !monthly);
+    btnY.classList.toggle('bg-lime-400', !monthly);
+    btnY.classList.toggle('text-bg', !monthly);
+    btnY.classList.toggle('text-txt-300', monthly);
+    document.querySelectorAll('[data-price]').forEach(el => {
+      el.textContent = monthly ? el.dataset.monthly : el.dataset.yearly;
+    });
+  }
+  btnM.addEventListener('click', () => setBilling('monthly'));
+  btnY.addEventListener('click', () => setBilling('yearly'));
+</script>
+</body>
+</html>
