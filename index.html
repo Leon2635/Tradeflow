@@ -1025,8 +1025,8 @@
       </button>
       <div class="text-white text-xs font-semibold truncate px-2 flex-1 text-center" id="zoom-title">Tegning</div>
       <div class="flex items-center gap-1.5 shrink-0">
-        <button class="tap w-10 h-10 rounded-full bg-white/20 text-white flex items-center justify-center font-bold text-xl" id="zoom-out">−</button>
-        <button class="tap w-10 h-10 rounded-full bg-white/20 text-white flex items-center justify-center font-bold text-xl" id="zoom-in">+</button>
+        <button class="tap w-10 h-10 rounded-full bg-white/20 text-white flex items-center justify-center" id="zoom-out" aria-label="Zoom ud"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+        <button class="tap w-10 h-10 rounded-full bg-white/20 text-white flex items-center justify-center" id="zoom-in" aria-label="Zoom ind"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
         <button class="tap w-10 h-10 rounded-full bg-white/20 text-white flex items-center justify-center" id="zoom-menu" aria-label="Menu">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </button>
@@ -1110,10 +1110,6 @@
     <div class="absolute left-0 right-0 bottom-0 bg-surface border-t border-border rounded-t-3xl p-4 shadow-card">
       <div class="mx-auto w-10 h-1 rounded-full bg-border mb-3"></div>
       <div class="text-sm font-bold text-ink-900 px-1 pb-2 truncate" id="sagmenu-title">Sag</div>
-      <button class="tap w-full text-left px-3 py-3 rounded-xl hover:bg-soft flex items-center gap-3 text-sm font-semibold text-ink-900" id="sagmenu-open">
-        <span class="w-8 h-8 rounded-lg bg-clay-50 text-clay-600 flex items-center justify-center shrink-0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span>
-        Åbn tegning
-      </button>
       <button class="tap w-full text-left px-3 py-3 rounded-xl hover:bg-soft flex items-center gap-3 text-sm font-semibold text-ink-900" id="sagmenu-switch">
         <span class="w-8 h-8 rounded-lg bg-soft text-ink-700 flex items-center justify-center shrink-0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></span>
         Skift sag
@@ -1422,7 +1418,7 @@ async function deleteCustomCategory(key) {
 // ============================================================
 // Standard mappestruktur — neutral og licensfri (admin kan selv tilføje/ændre mapper)
 // ============================================================
-const APP_BUILD = '1.12.0 · 07-06-2026';
+const APP_BUILD = '1.13.0 · 07-06-2026';
 const DEFAULT_FOLDERS = [
   { code: 'C01', name: 'Basis' },
   { code: 'C02', name: 'Aftaler' },
@@ -3521,7 +3517,7 @@ async function handleFileAction(act) {
   const t = await getOne('tegninger', id);
   if (!t) { closeModal('modal-file-actions'); return; }
   if (act === 'open') { closeModal('modal-file-actions'); openTegningFile(id); return; }
-  if (act === 'addpin') { closeModal('modal-file-actions'); toast('Tryk på tegningen for at sætte en markør'); return; }
+  if (act === 'addpin') { closeModal('modal-file-actions'); if (zoomState.drawMode) finishDrawMode(false); zoomState.pinMode = true; toast('Tryk på tegningen for at placere markøren'); return; }
   if (act === 'draw') { closeModal('modal-file-actions'); startDrawMode(); return; }
   if (act === 'rename') {
     closeModal('modal-file-actions');
@@ -4226,6 +4222,7 @@ const zoomState = {
   movedDist: 0,
   pdfDoc: null, numPages: 1, pdfPage: 1,
   drawMode: false, drawColor: '#E11D48', strokes: [], annotations: [], _cur: null, _drawing: false,
+  pinMode: false, // punkt 11: tryk placerer KUN en markør når man har valgt "Tilføj pin"
 };
 
 // ---- Tegn på tegning (annotationer) ----
@@ -4290,6 +4287,7 @@ function drawEnd() {
 }
 function startDrawMode() {
   zoomState.drawMode = true;
+  zoomState.pinMode = false; // tegne-tilstand og pin-tilstand udelukker hinanden (punkt 11)
   zoomState.strokes = (zoomState.annotations || []).map(s => ({ ...s, p: s.p.slice() })); // redigerbar kopi
   document.getElementById('zoom-draw-bar').classList.remove('hidden');
   document.getElementById('zoom-pins').style.display = 'none';
@@ -4368,7 +4366,7 @@ async function openZoomViewer() {
   if (!tegning) return;
   document.getElementById('zoom-title').textContent = tegning.name || 'Tegning';
   zoomState.pdfDoc = null; zoomState.numPages = 1; zoomState.pdfPage = 1;
-  zoomState.annotations = tegning.annotations || []; zoomState.drawMode = false; zoomState._cur = null;
+  zoomState.annotations = tegning.annotations || []; zoomState.drawMode = false; zoomState.pinMode = false; zoomState._cur = null;
   document.getElementById('zoom-pagenav').classList.add('hidden');
   document.getElementById('zoom-draw-bar').classList.add('hidden');
   document.getElementById('zoom-annot-by').classList.add('hidden');
@@ -4611,8 +4609,9 @@ function setupZoomViewer() {
     if (zoomState.drawMode) { if (zoomState._drawing) drawEnd(); return; }
     if (e.touches.length === 0) {
       renderZoomPins();
-      // Et rent, hurtigt tryk (ikke på en eksisterende pin) → placér markør
-      if (tTap && !tOnPin && (Date.now() - tStartT) < 700 && e.changedTouches.length) {
+      // Et rent, hurtigt tryk placerer KUN en markør hvis pin-tilstand er valgt (punkt 11)
+      if (zoomState.pinMode && tTap && !tOnPin && (Date.now() - tStartT) < 700 && e.changedTouches.length) {
+        zoomState.pinMode = false;
         placePinAtScreen(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
       }
       tTap = false;
@@ -4650,8 +4649,8 @@ function setupZoomViewer() {
     if (zoomState.drawMode) { if (zoomState._drawing) drawEnd(); return; }
     if (!mDown) return;
     mDown = false; container.style.cursor = 'grab'; renderZoomPins();
-    // Rent klik (trykket startede i containeren, ikke et træk, ikke på en pin) → placér markør
-    if (mMoved < 6 && !mOnPin) placePinAtScreen(e.clientX, e.clientY);
+    // Rent klik placerer KUN en markør hvis pin-tilstand er valgt (punkt 11)
+    if (zoomState.pinMode && mMoved < 6 && !mOnPin) { zoomState.pinMode = false; placePinAtScreen(e.clientX, e.clientY); }
   });
   container.style.cursor = 'grab';
 
@@ -5839,7 +5838,6 @@ function setupModals() {
   });
 
   // Forsidens sag-menu (⋯)
-  document.getElementById('sagmenu-open')?.addEventListener('click', () => { closeModal('modal-sag-menu'); folderPath = []; showScreen('plan'); });
   document.getElementById('sagmenu-switch')?.addEventListener('click', () => { closeModal('modal-sag-menu'); openSagPicker('home'); });
 }
 
