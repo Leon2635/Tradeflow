@@ -372,14 +372,14 @@
         </div>
       </div>
 
-      <!-- Tilføj fil + Ny mappe side om side (punkt 3) -->
-      <div class="flex items-center gap-2">
-        <label class="tap inline-flex items-center gap-1.5 bg-clay-400 hover:bg-clay-500 text-white font-bold rounded-xl px-3.5 py-2 text-sm cursor-pointer shadow-soft" id="folder-upload-label">
+      <!-- Tilføj fil + Ny mappe: lige store, samme højde, centreret -->
+      <div class="grid grid-cols-2 gap-2.5">
+        <label class="tap flex items-center justify-center gap-2 bg-clay-400 hover:bg-clay-500 text-white font-bold rounded-xl h-12 text-sm cursor-pointer shadow-soft" id="folder-upload-label">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           <span id="folder-upload-text">Tilføj fil</span>
           <input type="file" accept="image/*,application/pdf,.ifc,.rvt,.dwg,.doc,.docx,.xls,.xlsx" multiple class="hidden" id="input-folder-upload">
         </label>
-        <button class="tap inline-flex items-center gap-1.5 bg-soft border border-border text-ink-700 font-bold rounded-xl px-3.5 py-2 text-sm" id="btn-new-folder">
+        <button class="tap flex items-center justify-center gap-2 bg-soft border border-border text-ink-900 font-bold rounded-xl h-12 text-sm" id="btn-new-folder">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Ny mappe
         </button>
@@ -1446,7 +1446,7 @@ async function deleteCustomCategory(key) {
 // ============================================================
 // Standard mappestruktur — neutral og licensfri (admin kan selv tilføje/ændre mapper)
 // ============================================================
-const APP_BUILD = '1.19.0 · 07-06-2026';
+const APP_BUILD = '1.19.1 · 07-06-2026';
 const DEFAULT_FOLDERS = [
   { code: 'C01', name: 'Basis' },
   { code: 'C02', name: 'Aftaler' },
@@ -3903,7 +3903,7 @@ function renderFolderFiles(filesDiv, here, folders) {
     <div class="flex items-center gap-2 px-3 py-2.5 border-b border-border">
       <div class="w-8 h-8 rounded-lg bg-clay-50 text-clay-500 flex items-center justify-center shrink-0"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>
       <button class="tap flex-1 min-w-0 text-left" data-cfolder="${escapeHtml(f.name)}">
-        <div class="text-[13px] font-semibold text-ink-900 truncate leading-tight">${escapeHtml(f.name)}</div>
+        <div class="text-[13px] font-semibold text-ink-900 leading-tight" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;">${escapeHtml(f.name)}</div>
         <div class="text-[10px] text-ink-500">${f.count} fil${f.count === 1 ? '' : 'er'}</div>
       </button>
       <span class="w-8 text-right text-[10px] text-ink-400 shrink-0">–</span>
@@ -3918,7 +3918,7 @@ function renderFolderFiles(filesDiv, here, folders) {
     return `<div class="flex items-center gap-2 px-3 py-2.5 border-b border-border last:border-0">
       <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 font-extrabold text-[8px] tracking-tight" style="background:${ft.bg};color:${ft.fg}">${ft.abbr}</div>
       <button class="tap flex-1 min-w-0 text-left" data-open-file="${escapeHtml(t.id)}">
-        <div class="text-[13px] font-semibold text-ink-900 truncate leading-tight">${escapeHtml(t.name)}</div>
+        <div class="text-[13px] font-semibold text-ink-900 leading-tight" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;">${escapeHtml(t.name)}</div>
       </button>
       <span class="w-8 text-right text-[10px] text-ink-500 shrink-0">${ft.abbr}</span>
       <span class="w-12 text-right text-[10px] text-ink-500 shrink-0 tabular-nums">${szStr}</span>
