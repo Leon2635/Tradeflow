@@ -1446,7 +1446,7 @@ async function deleteCustomCategory(key) {
 // ============================================================
 // Standard mappestruktur — neutral og licensfri (admin kan selv tilføje/ændre mapper)
 // ============================================================
-const APP_BUILD = '1.19.1 · 07-06-2026';
+const APP_BUILD = '1.19.2 · 07-06-2026';
 const DEFAULT_FOLDERS = [
   { code: 'C01', name: 'Basis' },
   { code: 'C02', name: 'Aftaler' },
@@ -1940,7 +1940,8 @@ async function renderJobs() {
   const sag = state.activeSagId ? await getOne('sager', state.activeSagId) : null;
   const nameEl = document.getElementById('ts-sag-name');
   const list = document.getElementById('jobs-list');
-  document.getElementById('fab')?.classList.remove('hidden'); // standard: vis FAB (skjules i tom tilstand nedenfor)
+  // FAB vises på opret-faner; IKKE på arkiv-faner Fuldført/Afvist (ingen oprettelse her)
+  document.getElementById('fab')?.classList.toggle('hidden', jobsTab === 'fuldfoert' || jobsTab === 'afvist');
 
   const pickNameEl = document.getElementById('ts-pick-name');
   if (!sag) {
