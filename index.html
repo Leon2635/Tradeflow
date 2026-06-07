@@ -1261,7 +1261,7 @@
   <!-- ====== NY KS MODAL (manuel oprettelse) ====== -->
   <div id="modal-new-ks" class="absolute inset-0 z-[60] hidden">
     <div class="absolute inset-0 bg-ink-900/40 backdrop-blur-sm" data-close-modal></div>
-    <div class="absolute left-0 right-0 bottom-0 bg-surface border-t border-border rounded-t-3xl p-5 max-h-[85%] overflow-y-auto shadow-card">
+    <div class="absolute left-0 right-0 bottom-0 bg-surface border-t border-border rounded-t-3xl px-5 pt-5 max-h-[85%] overflow-y-auto shadow-card" style="padding-bottom: max(env(safe-area-inset-bottom, 0px), 20px);">
       <div class="mx-auto w-10 h-1 rounded-full bg-border mb-4"></div>
       <div class="flex items-start justify-between mb-3">
         <h2 class="text-lg font-bold text-ink-900">Tilføj kontrolplan</h2>
@@ -1427,7 +1427,7 @@ async function deleteCustomCategory(key) {
 // ============================================================
 // Standard mappestruktur — neutral og licensfri (admin kan selv tilføje/ændre mapper)
 // ============================================================
-const APP_BUILD = '1.16.0 · 07-06-2026';
+const APP_BUILD = '1.17.0 · 07-06-2026';
 const DEFAULT_FOLDERS = [
   { code: 'C01', name: 'Basis' },
   { code: 'C02', name: 'Aftaler' },
@@ -3970,8 +3970,8 @@ async function renderFolders() {
           </div>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgb(var(--c-ink-300))" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
-        ${isAdmin() ? `<button class="tap w-9 h-9 rounded-lg bg-soft text-bad flex items-center justify-center shrink-0" data-del-cfolder="${escapeHtml(name)}" title="Slet mappe">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+        ${isAdmin() ? `<button class="tap w-9 h-9 rounded-lg bg-soft text-ink-500 flex items-center justify-center shrink-0" data-del-cfolder="${escapeHtml(name)}" title="Slet mappe">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg>
         </button>` : ''}
       </div>`;
     }).join('');
@@ -4090,7 +4090,7 @@ async function renderFolders() {
         ${isAdmin() ? (isRemoved
           ? `<button class="tap w-9 h-9 rounded-lg bg-soft text-ok flex items-center justify-center shrink-0" data-restore-folder="${escapeHtml(c.code)}" title="Gendan mappe">↩</button>`
           : `<button class="tap w-9 h-9 rounded-lg bg-soft text-ink-500 flex items-center justify-center shrink-0" data-remove-folder="${escapeHtml(c.code)}" title="Skjul/ryd mappe">
-               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg>
              </button>`) : ''}
       </div>`;
   }).join('');
@@ -4109,8 +4109,8 @@ async function renderFolders() {
           </div>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgb(var(--c-ink-300))" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
-        ${isAdmin() ? `<button class="tap w-9 h-9 rounded-lg bg-soft text-bad flex items-center justify-center shrink-0" data-del-cfolder="${escapeHtml(name)}" title="Slet mappe">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+        ${isAdmin() ? `<button class="tap w-9 h-9 rounded-lg bg-soft text-ink-500 flex items-center justify-center shrink-0" data-del-cfolder="${escapeHtml(name)}" title="Slet mappe">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg>
         </button>` : ''}
       </div>`;
   }).join('');
