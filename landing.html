@@ -12,7 +12,8 @@
       colors: {
         bg: '#0A0E17', surface: '#121826', surface2: '#1A2233', border: '#222B40',
         txt: { 100:'#F4F6FB',300:'#C3CAD8',500:'#8A93A6',700:'#5A6478' },
-        lime: { 300:'#D7FF7A',400:'#BFFF4D',500:'#A4F02A',600:'#7FC91C' },
+        /* "lime" beholdt som internt navn, men nu hi-vis amber (matcher appen) */
+        lime: { 300:'#FDE6A0',400:'#F5B301',500:'#D99A00',600:'#9A6B00' },
         ok:'#34D399', warn:'#FBBF24', bad:'#F87171',
       },
       fontFamily: { sans:['Inter','system-ui','sans-serif'], display:['Inter','sans-serif'] }
@@ -25,16 +26,16 @@
 <style>
   html { scroll-behavior: smooth; }
   body { background:#05080F; color:#F4F6FB; font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased; }
-  .glow-lime { box-shadow: 0 0 0 1px rgba(164,240,42,0.25), 0 20px 60px rgba(164,240,42,0.18); }
-  .hero-gradient { background: radial-gradient(800px 400px at 70% 20%, rgba(164,240,42,0.12), transparent 60%), radial-gradient(600px 500px at 20% 80%, rgba(58,98,255,0.08), transparent 60%); }
+  .glow-lime { box-shadow: 0 0 0 1px rgba(245,179,1,0.25), 0 20px 60px rgba(245,179,1,0.18); }
+  .hero-gradient { background: radial-gradient(800px 400px at 70% 20%, rgba(245,179,1,0.12), transparent 60%), radial-gradient(600px 500px at 20% 80%, rgba(58,98,255,0.08), transparent 60%); }
   .glass { background: rgba(18,24,38,0.6); backdrop-filter: blur(12px); border:1px solid rgba(255,255,255,0.06); }
-  .gradient-text { background: linear-gradient(135deg, #F4F6FB 0%, #BFFF4D 60%, #F4F6FB 100%); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .gradient-text { background: linear-gradient(135deg, #F4F6FB 0%, #F5B301 60%, #F4F6FB 100%); -webkit-background-clip:text; background-clip:text; color:transparent; }
   details[open] summary svg { transform: rotate(180deg); }
   summary::-webkit-details-marker { display:none; }
-  .ring-glow:hover { box-shadow: 0 0 0 1px rgba(191,255,77,0.5), 0 12px 40px rgba(191,255,77,0.15); }
+  .ring-glow:hover { box-shadow: 0 0 0 1px rgba(245,179,1,0.5), 0 12px 40px rgba(245,179,1,0.15); }
   .feature-card { transition: transform .25s ease, box-shadow .25s ease; }
   .feature-card:hover { transform: translateY(-4px); box-shadow: 0 12px 36px rgba(0,0,0,0.4); }
-  .price-popular { box-shadow: 0 0 0 2px #BFFF4D, 0 30px 80px rgba(191,255,77,0.20); transform: scale(1.02); }
+  .price-popular { box-shadow: 0 0 0 2px #F5B301, 0 30px 80px rgba(245,179,1,0.20); transform: scale(1.02); }
   @keyframes pulse-soft { 0%,100%{opacity:1} 50%{opacity:.5} }
   .pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
   /* mini phone frame in hero */
@@ -89,9 +90,9 @@
         </a>
       </div>
       <div class="flex items-center gap-5 text-xs text-txt-500">
-        <span class="flex items-center gap-1.5"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Intet kreditkort</span>
-        <span class="flex items-center gap-1.5"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Dansk support</span>
-        <span class="flex items-center gap-1.5"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>GDPR · EU-server</span>
+        <span class="flex items-center gap-1.5"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Intet kreditkort</span>
+        <span class="flex items-center gap-1.5"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>Dansk support</span>
+        <span class="flex items-center gap-1.5"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>GDPR · EU-server</span>
       </div>
     </div>
 
@@ -220,10 +221,10 @@
         Modtag .ifc, .rvt eller .dwg fra arkitekt og ingeniør. TradeFlow konverterer og viser modellen direkte i appen. Filtrér på discipliner (Arkitektur, VVS, El, Konstruktion) og placér tilsyn på den faktiske element-koordinat.
       </p>
       <ul class="space-y-3 mb-7">
-        <li class="flex items-start gap-3"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" stroke-linecap="round" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg><span><strong class="text-txt-100">IFC 4 / IFC 2x3</strong> — fuld støtte for åben BIM-standard</span></li>
-        <li class="flex items-start gap-3"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" stroke-linecap="round" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg><span><strong class="text-txt-100">Revit 2022–2025</strong> — auto-konvertering til IFC i skyen</span></li>
-        <li class="flex items-start gap-3"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" stroke-linecap="round" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg><span><strong class="text-txt-100">BCF 3.0 eksport</strong> — pins og kommentarer tilbage til Revit/ArchiCAD</span></li>
-        <li class="flex items-start gap-3"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" stroke-linecap="round" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg><span><strong class="text-txt-100">Dalux & BIM360 sync</strong> — to-vejs synkronisering (Business-plan)</span></li>
+        <li class="flex items-start gap-3"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2.5" stroke-linecap="round" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg><span><strong class="text-txt-100">IFC 4 / IFC 2x3</strong> — fuld støtte for åben BIM-standard</span></li>
+        <li class="flex items-start gap-3"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2.5" stroke-linecap="round" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg><span><strong class="text-txt-100">Revit 2022–2025</strong> — auto-konvertering til IFC i skyen</span></li>
+        <li class="flex items-start gap-3"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2.5" stroke-linecap="round" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg><span><strong class="text-txt-100">BCF 3.0 eksport</strong> — pins og kommentarer tilbage til Revit/ArchiCAD</span></li>
+        <li class="flex items-start gap-3"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2.5" stroke-linecap="round" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg><span><strong class="text-txt-100">Dalux & BIM360 sync</strong> — to-vejs synkronisering (Business-plan)</span></li>
       </ul>
     </div>
     <div class="bg-bg border border-border rounded-2xl p-5 glow-lime">
@@ -243,12 +244,12 @@
           <polygon points="0,-55 110,-55 0,-110 -110,-55" fill="#1F2A40" stroke="#3A4763"/>
         </g>
         <g transform="translate(200,90)">
-          <polygon points="0,0 0,60 110,5 110,-55" fill="url(#ws1)" stroke="#BFFF4D" stroke-width="0.8"/>
-          <polygon points="0,0 0,60 -110,5 -110,-55" fill="url(#wf1)" stroke="#BFFF4D" stroke-width="0.8"/>
-          <polygon points="0,-55 110,-55 0,-110 -110,-55" fill="#1F2A40" stroke="#BFFF4D" stroke-width="0.8"/>
+          <polygon points="0,0 0,60 110,5 110,-55" fill="url(#ws1)" stroke="#F5B301" stroke-width="0.8"/>
+          <polygon points="0,0 0,60 -110,5 -110,-55" fill="url(#wf1)" stroke="#F5B301" stroke-width="0.8"/>
+          <polygon points="0,-55 110,-55 0,-110 -110,-55" fill="#1F2A40" stroke="#F5B301" stroke-width="0.8"/>
         </g>
         <g transform="translate(155,75)">
-          <path d="M 0 -10 C -7 -10 -10 -5 -10 0 C -10 6 0 14 0 14 C 0 14 10 6 10 0 C 10 -5 7 -10 0 -10 Z" fill="#BFFF4D" stroke="#0A0E17" stroke-width="1.5"/>
+          <path d="M 0 -10 C -7 -10 -10 -5 -10 0 C -10 6 0 14 0 14 C 0 14 10 6 10 0 C 10 -5 7 -10 0 -10 Z" fill="#F5B301" stroke="#0A0E17" stroke-width="1.5"/>
           <text x="0" y="2" text-anchor="middle" font-size="7" font-weight="700" fill="#0A0E17">!</text>
         </g>
         <g transform="translate(255,110)">
@@ -291,12 +292,12 @@
         </div>
         <a href="#" class="block w-full text-center bg-surface2 border border-border hover:border-lime-400/50 text-txt-100 font-bold py-3.5 rounded-xl mb-7 transition">Start gratis prøve</a>
         <ul class="space-y-2.5 text-sm text-txt-300">
-          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>1 bruger</li>
-          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>Tidsregistrering + GPS-kørsel</li>
-          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>Foto-dokumentation</li>
-          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>Fakturering via e-Boks + mail</li>
-          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>Op til 25 aktive sager</li>
-          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>10 GB cloud lager</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>1 bruger</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>Tidsregistrering + GPS-kørsel</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>Foto-dokumentation</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>Fakturering via e-Boks + mail</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>Op til 25 aktive sager</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>10 GB cloud lager</li>
           <li class="flex gap-2 text-txt-500"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5A6478" stroke-width="2.5" class="shrink-0 mt-0.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>BIM / tegninger</li>
         </ul>
       </div>
@@ -313,13 +314,13 @@
         </div>
         <a href="#" class="block w-full text-center bg-lime-400 hover:bg-lime-300 text-bg font-black py-3.5 rounded-xl mb-7 transition">Start gratis prøve</a>
         <ul class="space-y-2.5 text-sm text-txt-100">
-          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg><strong>Alt fra Solo, plus:</strong></li>
-          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>2–10 brugere</li>
-          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>2D-tegninger (PDF) med GPS-pins</li>
-          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>Tilsyn + tekniske forespørgsler</li>
-          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>PDF-tilsynsrapporter med branding</li>
-          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>Ubegrænset sager · 100 GB lager</li>
-          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>Hold-kalender og opgavefordeling</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg><strong>Alt fra Solo, plus:</strong></li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>2–10 brugere</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>2D-tegninger (PDF) med GPS-pins</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>Tilsyn + tekniske forespørgsler</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>PDF-tilsynsrapporter med branding</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>Ubegrænset sager · 100 GB lager</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>Hold-kalender og opgavefordeling</li>
         </ul>
       </div>
 
@@ -334,13 +335,13 @@
         </div>
         <a href="#" class="block w-full text-center bg-surface2 border border-border hover:border-lime-400/50 text-txt-100 font-bold py-3.5 rounded-xl mb-7 transition">Kontakt salg</a>
         <ul class="space-y-2.5 text-sm text-txt-300">
-          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg><strong class="text-txt-100">Alt fra Pro, plus:</strong></li>
-          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>Ubegrænset brugere</li>
-          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>IFC + Revit-import (.ifc/.rvt)</li>
-          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>3D-modelvisning + discipliner</li>
-          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>BCF-eksport · Dalux/BIM360 sync</li>
-          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>1 TB lager · SLA 99,9%</li>
-          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BFFF4D" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>API + SSO · dedikeret support</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg><strong class="text-txt-100">Alt fra Pro, plus:</strong></li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>Ubegrænset brugere</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>IFC + Revit-import (.ifc/.rvt)</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>3D-modelvisning + discipliner</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>BCF-eksport · Dalux/BIM360 sync</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>1 TB lager · SLA 99,9%</li>
+          <li class="flex gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2.5" class="shrink-0 mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>API + SSO · dedikeret support</li>
         </ul>
       </div>
     </div>
@@ -352,7 +353,7 @@
 <!-- ================ TESTIMONIAL ================ -->
 <section class="py-20 px-5 border-t border-border bg-surface/30">
   <div class="max-w-4xl mx-auto text-center">
-    <svg width="40" height="32" viewBox="0 0 40 32" fill="#BFFF4D" class="mx-auto mb-6 opacity-70"><path d="M0 32V20C0 9 6 1.5 18 0v8c-5 1.5-8 5-8 12h8v12H0zM22 32V20c0-11 6-18.5 18-20v8c-5 1.5-8 5-8 12h8v12H22z"/></svg>
+    <svg width="40" height="32" viewBox="0 0 40 32" fill="#F5B301" class="mx-auto mb-6 opacity-70"><path d="M0 32V20C0 9 6 1.5 18 0v8c-5 1.5-8 5-8 12h8v12H0zM22 32V20c0-11 6-18.5 18-20v8c-5 1.5-8 5-8 12h8v12H22z"/></svg>
     <p class="text-2xl md:text-3xl font-medium text-txt-100 leading-snug mb-6">
       "Vi gik fra papir-sedler og excel til TradeFlow på 2 uger. Vi sender nu fakturaer dagen efter jobbet er færdigt — det har givet os 18 dages bedre likviditet."
     </p>
