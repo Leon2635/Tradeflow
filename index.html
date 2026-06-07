@@ -343,10 +343,10 @@
           <span>Mangler</span><span class="text-[10px] tabular-nums font-bold" id="tab-count-mangler">0</span>
         </button>
         <button class="jobs-tab tap py-2 px-3 rounded-lg text-[11px] font-bold flex flex-col items-center gap-0.5 shrink-0" data-jobs-tab="ts">
-          <span>Teknisk</span><span class="text-[10px] tabular-nums opacity-80" id="tab-count-ts">0</span>
+          <span>TS</span><span class="text-[10px] tabular-nums opacity-80" id="tab-count-ts">0</span>
         </button>
         <button class="jobs-tab tap py-2 px-3 rounded-lg text-[11px] font-bold flex flex-col items-center gap-0.5 shrink-0" data-jobs-tab="kvalitet">
-          <span>Kvalitet</span><span class="text-[10px] tabular-nums opacity-80" id="tab-count-kvalitet">0</span>
+          <span>KS</span><span class="text-[10px] tabular-nums opacity-80" id="tab-count-kvalitet">0</span>
         </button>
         <button class="jobs-tab tap py-2 px-3 rounded-lg text-[11px] font-bold flex flex-col items-center gap-0.5 shrink-0" data-jobs-tab="fuldfoert">
           <span>Fuldført</span><span class="text-[10px] tabular-nums opacity-80" id="tab-count-fuldfoert">0</span>
@@ -1446,7 +1446,7 @@ async function deleteCustomCategory(key) {
 // ============================================================
 // Standard mappestruktur — neutral og licensfri (admin kan selv tilføje/ændre mapper)
 // ============================================================
-const APP_BUILD = '1.19.2 · 07-06-2026';
+const APP_BUILD = '1.20.0 · 07-06-2026';
 const DEFAULT_FOLDERS = [
   { code: 'C01', name: 'Basis' },
   { code: 'C02', name: 'Aftaler' },
@@ -1936,6 +1936,17 @@ function taskCardHtml(p) {
     </button>`;
 }
 
+// Ens tom-tilstand for TS-fanerne (ikon + "Ingen aktive …" + peger på "+" nederst)
+function jobsEmptyCard(iconSvg, title, tabLabel) {
+  return `<div class="bg-surface border border-border rounded-2xl px-6 py-10 text-center shadow-soft">
+    <div class="w-16 h-16 rounded-full bg-soft flex items-center justify-center mx-auto mb-4">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgb(var(--c-ink-300))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${iconSvg}</svg>
+    </div>
+    <div class="text-base font-bold text-ink-900 mb-1">${title}</div>
+    <div class="text-[13px] text-ink-500">Tryk på <b class="text-clay-500">+</b> nederst → <b class="text-ink-700">${tabLabel}</b> for at oprette en.</div>
+  </div>`;
+}
+
 async function renderJobs() {
   const sag = state.activeSagId ? await getOne('sager', state.activeSagId) : null;
   const nameEl = document.getElementById('ts-sag-name');
@@ -1999,7 +2010,7 @@ async function renderJobs() {
 
   if (jobsTab === 'kvalitet') {
     if (ksActive.length === 0) {
-      list.innerHTML = `<div class="bg-surface border border-border rounded-xl p-6 text-center text-sm text-ink-500">Ingen aktive kontrolplaner.<br>Tryk på <b class="text-clay-500">+</b> nederst → <b>KS</b> for at oprette en.</div>`;
+      list.innerHTML = jobsEmptyCard('<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/>', 'Ingen aktive kontrolplaner.', 'KS');
     } else {
       list.innerHTML = ksActive.map(ksCardHtml).join('');
     }
@@ -2057,18 +2068,12 @@ async function renderJobs() {
   const qType = jobsTab === 'ts' ? 'inquiry' : 'mangel';
   const qLabel = jobsTab === 'ts' ? 'tekniske forespørgsler' : 'mangler';
   if (arr.length === 0) {
-    // Tom tilstand: kun ÉN centreret CTA — skjul den flydende + (punkt 7)
-    document.getElementById('fab')?.classList.add('hidden');
+    // Tom tilstand: ikon + tekst der peger på "+" nederst (FAB forbliver synlig)
     const isTs = jobsTab === 'ts';
-    list.innerHTML = `<div class="bg-surface border border-border rounded-2xl px-6 py-10 text-center shadow-soft">
-      <div class="w-16 h-16 rounded-full bg-soft flex items-center justify-center mx-auto mb-4">
-        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="rgb(var(--c-ink-300))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-      </div>
-      <div class="text-base font-bold text-ink-900 mb-1">Ingen ${isTs ? 'tekniske forespørgsler' : 'mangler'} endnu</div>
-      <div class="text-[13px] text-ink-500 mb-5 leading-relaxed">Der er ingen registrerede ${isTs ? 'forespørgsler' : 'mangler'}<br>på dette projekt endnu.</div>
-      <button class="tap bg-clay-400 hover:bg-clay-500 text-white font-bold rounded-xl px-6 py-3 text-sm" id="empty-create">+ Opret ${isTs ? 'TS' : 'mangel'}</button>
-    </div>`;
-    document.getElementById('empty-create').addEventListener('click', () => quickCreatePin(qType));
+    const icon = isTs
+      ? '<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>'
+      : '<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>';
+    list.innerHTML = jobsEmptyCard(icon, isTs ? 'Ingen aktive tekniske forespørgsler.' : 'Ingen aktive mangler.', isTs ? 'TS' : 'Mangler');
     return;
   }
   list.innerHTML = arr.map(taskCardHtml).join('');
