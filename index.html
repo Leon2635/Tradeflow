@@ -327,31 +327,25 @@
 
     <!-- TS — per sag: Opgaver · Teknisk forespørgsel · Kvalitet -->
     <section id="screen-jobs" class="screen px-5 pt-5 space-y-4">
-      <div class="flex items-start justify-between gap-2">
-        <div class="min-w-0">
-          <h1 class="text-2xl font-bold text-ink-900">Overblik</h1>
-          <div class="text-xs text-ink-500 mt-0.5 truncate" id="ts-sag-name">Vælg en sag</div>
-        </div>
-        <button class="tap text-[11px] font-bold bg-soft border border-border text-ink-700 pl-3 pr-2 py-2 rounded-full flex items-center gap-1 shrink-0 max-w-[150px]" id="ts-pick-sag">
-          <span class="truncate" id="ts-pick-name">Skift sag</span>
-          <svg width="12" height="12" class="shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
+      <div class="text-center">
+        <h1 class="text-2xl font-bold text-ink-900">Overblik</h1>
+        <div class="text-xs text-ink-500 mt-0.5 truncate" id="ts-sag-name">Vælg en sag</div>
       </div>
-      <!-- Kolonner / faner (scrollbar så de alle er med) -->
-      <div class="flex gap-1 bg-soft rounded-xl p-1 overflow-x-auto no-scrollbar" id="ts-tabs">
-        <button class="jobs-tab tap py-2 px-3 rounded-lg text-[11px] font-bold flex flex-col items-center gap-0.5 shrink-0" data-jobs-tab="mangler">
+      <!-- Kolonner / faner — fordelt jævnt så de passer skærmen (punkt 3) -->
+      <div class="grid grid-cols-5 gap-1 bg-soft rounded-xl p-1" id="ts-tabs">
+        <button class="jobs-tab tap py-2 px-1 rounded-lg text-[11px] font-bold flex flex-col items-center gap-0.5" data-jobs-tab="mangler">
           <span>Mangler</span><span class="text-[10px] tabular-nums font-bold" id="tab-count-mangler">0</span>
         </button>
-        <button class="jobs-tab tap py-2 px-3 rounded-lg text-[11px] font-bold flex flex-col items-center gap-0.5 shrink-0" data-jobs-tab="ts">
+        <button class="jobs-tab tap py-2 px-1 rounded-lg text-[11px] font-bold flex flex-col items-center gap-0.5" data-jobs-tab="ts">
           <span>TS</span><span class="text-[10px] tabular-nums opacity-80" id="tab-count-ts">0</span>
         </button>
-        <button class="jobs-tab tap py-2 px-3 rounded-lg text-[11px] font-bold flex flex-col items-center gap-0.5 shrink-0" data-jobs-tab="kvalitet">
+        <button class="jobs-tab tap py-2 px-1 rounded-lg text-[11px] font-bold flex flex-col items-center gap-0.5" data-jobs-tab="kvalitet">
           <span>KS</span><span class="text-[10px] tabular-nums opacity-80" id="tab-count-kvalitet">0</span>
         </button>
-        <button class="jobs-tab tap py-2 px-3 rounded-lg text-[11px] font-bold flex flex-col items-center gap-0.5 shrink-0" data-jobs-tab="fuldfoert">
+        <button class="jobs-tab tap py-2 px-1 rounded-lg text-[11px] font-bold flex flex-col items-center gap-0.5" data-jobs-tab="fuldfoert">
           <span>Fuldført</span><span class="text-[10px] tabular-nums opacity-80" id="tab-count-fuldfoert">0</span>
         </button>
-        <button class="jobs-tab tap py-2 px-3 rounded-lg text-[11px] font-bold flex flex-col items-center gap-0.5 shrink-0" data-jobs-tab="afvist">
+        <button class="jobs-tab tap py-2 px-1 rounded-lg text-[11px] font-bold flex flex-col items-center gap-0.5" data-jobs-tab="afvist">
           <span>Afvist</span><span class="text-[10px] tabular-nums font-bold" id="tab-count-afvist">0</span>
         </button>
       </div>
@@ -1327,6 +1321,30 @@
     <div class="text-white/70 text-[11px] text-center py-3 shrink-0" id="lightbox-meta"></div>
   </div>
 
+  <!-- ====== TEGN PÅ FOTO (markup) ====== -->
+  <div id="modal-photo-draw" class="absolute inset-0 z-[82] hidden bg-ink-900 flex flex-col">
+    <div class="flex items-center justify-between px-4 py-3 bg-black shrink-0" style="padding-top: max(env(safe-area-inset-top, 0px), 14px);">
+      <button id="photodraw-cancel" class="tap flex items-center gap-1.5 bg-soft text-ink-900 rounded-full pl-3 pr-4 py-2.5 font-bold text-sm">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Annullér
+      </button>
+      <div class="text-white text-sm font-bold">Tegn på foto</div>
+      <button id="photodraw-save" class="tap bg-clay-400 text-white rounded-full px-4 py-2.5 font-bold text-sm">✓ Gem</button>
+    </div>
+    <div class="flex-1 overflow-hidden flex items-center justify-center p-2 bg-black">
+      <canvas id="photo-draw-canvas" style="max-width:100%; max-height:100%; touch-action:none; border-radius:8px;"></canvas>
+    </div>
+    <div class="shrink-0 flex items-center justify-center gap-2 bg-black px-4 py-3" style="padding-bottom: max(env(safe-area-inset-bottom, 0px), 12px);">
+      <button class="pcolor tap w-7 h-7 rounded-full border-2 border-white" data-pcolor="#E11D48" style="background:#E11D48"></button>
+      <button class="pcolor tap w-7 h-7 rounded-full border-2 border-transparent" data-pcolor="#2563EB" style="background:#2563EB"></button>
+      <button class="pcolor tap w-7 h-7 rounded-full border-2 border-transparent" data-pcolor="#16A34A" style="background:#16A34A"></button>
+      <button class="pcolor tap w-7 h-7 rounded-full border-2 border-transparent" data-pcolor="#F5B301" style="background:#F5B301"></button>
+      <button class="pcolor tap w-7 h-7 rounded-full border-2 border-transparent" data-pcolor="#FFFFFF" style="background:#FFFFFF"></button>
+      <div class="w-px h-6 bg-white/30 mx-1"></div>
+      <button id="photodraw-undo" class="tap text-white text-xs font-bold px-2">Fortryd</button>
+      <button id="photodraw-clear" class="tap text-white text-xs font-bold px-2">Ryd</button>
+    </div>
+  </div>
+
   <!-- Fast +-knap (FAB) — hurtig oprettelse (punkt 1) -->
   <button id="fab" class="absolute right-5 z-40 w-10 h-10 rounded-full bg-clay-400 hover:bg-clay-500 text-white shadow-card flex items-center justify-center" style="bottom: calc(max(env(safe-area-inset-bottom, 0px), 12px) + 70px);" aria-label="Opret">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -1446,7 +1464,7 @@ async function deleteCustomCategory(key) {
 // ============================================================
 // Standard mappestruktur — neutral og licensfri (admin kan selv tilføje/ændre mapper)
 // ============================================================
-const APP_BUILD = '1.20.0 · 07-06-2026';
+const APP_BUILD = '1.21.0 · 07-06-2026';
 const DEFAULT_FOLDERS = [
   { code: 'C01', name: 'Basis' },
   { code: 'C02', name: 'Aftaler' },
@@ -2566,6 +2584,67 @@ function openLightbox(url, meta) {
   document.getElementById('lightbox-img').src = url;
   document.getElementById('lightbox-meta').textContent = meta || '';
   document.getElementById('modal-lightbox').classList.remove('hidden');
+}
+
+// ===== Tegn på foto (markup) — punkt 1 =====
+const _pdraw = { ctx: null, canvas: null, img: null, strokes: [], cur: null, drawing: false, color: '#E11D48', onSave: null };
+function redrawPhotoDraw() {
+  const { ctx, canvas, img, strokes } = _pdraw;
+  if (!ctx || !img) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  const lw = Math.max(3, Math.round(canvas.width * 0.007));
+  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  const drawStroke = s => {
+    if (!s.p || !s.p.length) return;
+    ctx.strokeStyle = s.c; ctx.lineWidth = lw;
+    ctx.beginPath(); ctx.moveTo(s.p[0][0], s.p[0][1]);
+    for (let i = 1; i < s.p.length; i++) ctx.lineTo(s.p[i][0], s.p[i][1]);
+    ctx.stroke();
+  };
+  strokes.forEach(drawStroke);
+  if (_pdraw.cur) drawStroke(_pdraw.cur);
+}
+function _pdrawPoint(e) {
+  const r = _pdraw.canvas.getBoundingClientRect();
+  return [(e.clientX - r.left) * (_pdraw.canvas.width / r.width), (e.clientY - r.top) * (_pdraw.canvas.height / r.height)];
+}
+// onSave(blob) kaldes med det annoterede JPEG
+function openPhotoDraw(srcUrl, onSave) {
+  const canvas = document.getElementById('photo-draw-canvas');
+  const ctx = canvas.getContext('2d');
+  const img = new Image();
+  img.onload = () => {
+    let w = img.naturalWidth || 1000, h = img.naturalHeight || 1000;
+    const maxSide = 1800;
+    if (Math.max(w, h) > maxSide) { const s = maxSide / Math.max(w, h); w = Math.round(w * s); h = Math.round(h * s); }
+    canvas.width = w; canvas.height = h;
+    Object.assign(_pdraw, { canvas, ctx, img, strokes: [], cur: null, drawing: false, color: '#E11D48', onSave });
+    redrawPhotoDraw();
+    document.querySelectorAll('.pcolor').forEach((b, i) => b.style.borderColor = i === 0 ? '#fff' : 'transparent');
+  };
+  img.onerror = () => toast('Kunne ikke åbne fotoet');
+  img.src = srcUrl;
+  openModal('modal-photo-draw');
+}
+function setupPhotoDraw() {
+  const canvas = document.getElementById('photo-draw-canvas');
+  if (!canvas) return;
+  canvas.addEventListener('pointerdown', e => { e.preventDefault(); _pdraw.drawing = true; _pdraw.cur = { c: _pdraw.color, p: [_pdrawPoint(e)] }; });
+  canvas.addEventListener('pointermove', e => { if (!_pdraw.drawing) return; e.preventDefault(); _pdraw.cur.p.push(_pdrawPoint(e)); redrawPhotoDraw(); });
+  window.addEventListener('pointerup', () => { if (!_pdraw.drawing) return; _pdraw.drawing = false; if (_pdraw.cur && _pdraw.cur.p.length) _pdraw.strokes.push(_pdraw.cur); _pdraw.cur = null; redrawPhotoDraw(); });
+  document.querySelectorAll('.pcolor').forEach(b => b.addEventListener('click', () => {
+    _pdraw.color = b.dataset.pcolor;
+    document.querySelectorAll('.pcolor').forEach(x => x.style.borderColor = 'transparent');
+    b.style.borderColor = '#fff';
+  }));
+  document.getElementById('photodraw-undo')?.addEventListener('click', () => { _pdraw.strokes.pop(); redrawPhotoDraw(); });
+  document.getElementById('photodraw-clear')?.addEventListener('click', () => { _pdraw.strokes = []; redrawPhotoDraw(); });
+  document.getElementById('photodraw-cancel')?.addEventListener('click', () => closeModal('modal-photo-draw'));
+  document.getElementById('photodraw-save')?.addEventListener('click', () => {
+    if (!_pdraw.canvas) { closeModal('modal-photo-draw'); return; }
+    _pdraw.canvas.toBlob(blob => { if (blob && _pdraw.onSave) _pdraw.onSave(blob); closeModal('modal-photo-draw'); }, 'image/jpeg', 0.9);
+  });
 }
 
 async function renderSagDetail() {
@@ -5089,16 +5168,22 @@ async function renderPinModal() {
     await del('fotos', f.id);
     d.existingPhotos = (d.existingPhotos || []).filter(x => x.id !== f.id);
     renderPinModal();
-  }));
+  }, f.blob ? () => openPhotoDraw(URL.createObjectURL(f.blob), async (blob) => {
+    f.blob = blob; f.storage_path = ''; await put('fotos', f); toast('Foto opdateret'); renderPinModal();
+  }) : null));
   pending.forEach(f => addDeletableThumb(strip, URL.createObjectURL(f), () => {
     const i = d.photos.indexOf(f);
     if (i >= 0) d.photos.splice(i, 1);
     renderPinModal();
-  }));
+  }, () => openPhotoDraw(URL.createObjectURL(f), (blob) => {
+    const i = d.photos.indexOf(f);
+    if (i >= 0) d.photos[i] = new File([blob], (f.name || 'foto') + '.jpg', { type: 'image/jpeg' });
+    renderPinModal();
+  })));
 }
 
-// Gen-brugelig billed-thumbnail med slet-knap (bruges af pin + KS)
-function addDeletableThumb(container, url, onDelete) {
+// Gen-brugelig billed-thumbnail med slet-knap (+ valgfri tegn-knap) — bruges af pin + KS
+function addDeletableThumb(container, url, onDelete, onDraw) {
   const wrap = document.createElement('div');
   wrap.className = 'thumb relative shrink-0 w-24 h-24';
   const img = document.createElement('div');
@@ -5113,6 +5198,15 @@ function addDeletableThumb(container, url, onDelete) {
   del.addEventListener('click', (e) => { e.stopPropagation(); onDelete(); });
   wrap.appendChild(img);
   wrap.appendChild(del);
+  if (onDraw) {
+    const pen = document.createElement('button');
+    pen.type = 'button';
+    pen.className = 'tap absolute bottom-1 right-1 px-1.5 h-6 rounded-full bg-clay-400 text-white flex items-center gap-1 shadow-md text-[10px] font-bold';
+    pen.setAttribute('aria-label', 'Tegn på foto');
+    pen.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Tegn';
+    pen.addEventListener('click', (e) => { e.stopPropagation(); onDraw(); });
+    wrap.appendChild(pen);
+  }
   container.appendChild(wrap);
 }
 
@@ -5210,6 +5304,17 @@ async function savePin() {
   const d = state.pinDraft;
   if (!d) return false;
   syncDraftFromInputs();
+  // Punkt 2: en mangel/TS kan ikke oprettes/sendes uden minimum note ELLER foto
+  if (d.type === 'mangel' || d.type === 'inquiry' || d.type === 'inspection') {
+    const hasText2 = (d.note && d.note.trim()) || (d.workerNote && d.workerNote.trim());
+    const hasPhoto2 = (d.photos && d.photos.length) || (d.existingPhotos && d.existingPhotos.length);
+    if (!hasText2 && !hasPhoto2) {
+      flagField(document.getElementById('pin-note'), true);
+      flagRow(document.getElementById('pin-photo-row'), true);
+      toast('Tilføj en note eller et foto før du sender');
+      return false;
+    }
+  }
   // #18: kan ikke fuldføres uden tekst OG foto → markér de manglende felter røde
   if (d.status === 'done') {
     const hasText = (d.note && d.note.trim()) || (d.workerNote && d.workerNote.trim());
@@ -7566,6 +7671,7 @@ async function init() {
   setupSettings();
   setupAuth();
   setupModals();
+  setupPhotoDraw();
 
   // Load and apply saved theme (default: dark)
   const savedTheme = await loadSetting('theme', 'dark');
