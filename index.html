@@ -1975,7 +1975,7 @@ async function quickCreatePin(type) {
   if (!teg) { toast('Upload en tegning først — så kan du sætte en pin'); folderPath = []; showScreen('plan'); return; }
   state.activeTegningId = teg.id;
   await openNewPin(0.5, 0.5);
-  if (state.pinDraft) { state.pinDraft.type = type; renderPinModal(); }
+  if (state.pinDraft) { state.pinDraft.type = type; state.pinDraft._typeLocked = true; renderPinModal(); }
 }
 
 // ============================================================
@@ -5213,7 +5213,9 @@ async function renderPinModal() {
     completeBtn.classList.toggle('hidden', d.status === 'done');
     rejectBtn.classList.toggle('hidden', isClosed);
   } else {
-    typeSec.classList.remove('hidden');
+    // Type er låst når den kommer fra konteksten (+ på Mangler/TS-fanen) eller punktet allerede findes.
+    // Kun ved ny markør direkte på en tegning (ukendt kontekst) kan man vælge Mangel/TS.
+    typeSec.classList.toggle('hidden', !!d._typeLocked || !d.isNew);
     deadlineSec?.classList.remove('hidden');
     assigneeSec.classList.remove('hidden');
     statusSec.classList.remove('hidden');
