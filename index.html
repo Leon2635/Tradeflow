@@ -1477,7 +1477,7 @@ async function deleteCustomCategory(key) {
 // ============================================================
 // Standard mappestruktur — neutral og licensfri (admin kan selv tilføje/ændre mapper)
 // ============================================================
-const APP_BUILD = '1.23.1 · 10-06-2026';
+const APP_BUILD = '1.24.0 · 10-06-2026';
 const DEFAULT_FOLDERS = [
   { code: 'C01', name: 'Basis' },
   { code: 'C02', name: 'Aftaler' },
@@ -7089,6 +7089,75 @@ async function makeZip(files) {
   return new Blob([...parts, ...central, new Uint8Array(eocd.buffer)], { type: 'application/zip' });
 }
 
+// Tegn én mangel/TS-pin (dråbe-markør) på et canvas — spids i (tipX,tipY)
+function drawExportPin(ctx, tipX, tipY, h, p) {
+  const s = h / 38, ox = tipX - 16 * s, oy = tipY - 36 * s;
+  const info = (typeof pinStatusInfo === 'function') ? pinStatusInfo(p) : null;
+  const col = (info && info.dotColor) || (p.type === 'inquiry' ? '#2563EB' : '#E11D48');
+  ctx.save();
+  ctx.translate(ox, oy); ctx.scale(s, s);
+  ctx.shadowColor = 'rgba(0,0,0,0.4)'; ctx.shadowBlur = 4; ctx.shadowOffsetY = 2;
+  ctx.beginPath();
+  ctx.moveTo(16, 2);
+  ctx.bezierCurveTo(7, 2, 3, 8, 3, 14);
+  ctx.bezierCurveTo(3, 23, 16, 36, 16, 36);
+  ctx.bezierCurveTo(16, 36, 29, 23, 29, 14);
+  ctx.bezierCurveTo(29, 8, 25, 2, 16, 2);
+  ctx.closePath();
+  ctx.fillStyle = col; ctx.fill();
+  ctx.shadowColor = 'transparent';
+  ctx.lineWidth = 2.5; ctx.strokeStyle = '#fff'; ctx.stroke();
+  ctx.fillStyle = '#fff'; ctx.font = '700 14px Inter, system-ui, sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(p.type === 'inquiry' ? '?' : '!', 16, 16);
+  ctx.restore();
+}
+
+// Brænd streger + tekst + pins ind på én side → JPEG-blob (samme geometri som zoom-vieweren)
+async function renderMarkedPage(bgBlob, isPdf, pageNum, anns, pins) {
+  let imgBlob = bgBlob;
+  if (isPdf) { try { imgBlob = await renderPdfFirstPage(bgBlob, pageNum); } catch (e) { console.warn('flatten render', e); return null; } }
+  let bmp;
+  try { bmp = await new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = URL.createObjectURL(imgBlob); }); }
+  catch { return null; }
+  const W = bmp.naturalWidth, H = bmp.naturalHeight;
+  if (!W || !H) { try { URL.revokeObjectURL(bmp.src); } catch {} return null; }
+  const canvas = document.createElement('canvas'); canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(bmp, 0, 0, W, H);
+  try { URL.revokeObjectURL(bmp.src); } catch {}
+
+  // Streger (frihånd)
+  const lw = Math.max(4, Math.round(W * 0.006));
+  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  (anns || []).filter(a => a.t !== 'text' && Array.isArray(a.p) && a.p.length).forEach(a => {
+    ctx.strokeStyle = a.c || '#E11D48'; ctx.lineWidth = lw;
+    ctx.beginPath(); ctx.moveTo(a.p[0][0], a.p[0][1]);
+    for (let i = 1; i < a.p.length; i++) ctx.lineTo(a.p[i][0], a.p[i][1]);
+    ctx.stroke();
+  });
+
+  // Tekst-bokse (med hvid kontur så de er læsbare på enhver baggrund)
+  (anns || []).filter(a => a.t === 'text' && a.text).forEach(a => {
+    const fs = a.size || Math.max(20, Math.round(W * 0.03));
+    ctx.font = `700 ${fs}px Inter, system-ui, sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const lines = String(a.text).split('\n');
+    const cx = (a.x ?? 0.5) * W, cy = (a.y ?? 0.5) * H, lineH = fs * 1.15;
+    lines.forEach((ln, i) => {
+      const ly = cy - (lines.length - 1) * lineH / 2 + i * lineH;
+      ctx.lineJoin = 'round'; ctx.lineWidth = Math.max(2, fs * 0.16); ctx.strokeStyle = 'rgba(255,255,255,0.95)';
+      ctx.strokeText(ln, cx, ly);
+      ctx.fillStyle = a.c || '#111827'; ctx.fillText(ln, cx, ly);
+    });
+  });
+
+  // Pins (mangel/TS-markører)
+  (pins || []).forEach(p => drawExportPin(ctx, (p.x ?? 0.5) * W, (p.y ?? 0.5) * H, Math.max(34, W * 0.045), p));
+
+  return await new Promise(res => canvas.toBlob(b => res(b), 'image/jpeg', 0.85));
+}
+
 // Fuld eksport som ZIP: data.json + rigtige tegnings-/foto-filer pr. sag + læsbar oversigt
 async function exportAllZip(btn) {
   const lblEl = btn && btn.querySelector('span');
@@ -7105,6 +7174,7 @@ async function exportAllZip(btn) {
     const media = [];
     (all.tegninger || []).forEach(t => { if (!t.deleted) media.push({ kind: 'tegning', rec: t }); });
     (all.fotos || []).forEach(f => { if (!f.deleted) media.push({ kind: 'foto', rec: f }); });
+    const pinsByTeg = {}; (all.pins || []).forEach(p => { if (p.tegningId && !p.deleted) (pinsByTeg[p.tegningId] = pinsByTeg[p.tegningId] || []).push(p); });
     const total = media.length;
     const files = [];
     const used = {};
@@ -7120,12 +7190,12 @@ async function exportAllZip(btn) {
       const base = safe((rec.name || '').replace(/\.[^.]+$/, '')) || (m.kind + '-' + rec.id);
       const nameExt = ((rec.name || '').split('.').pop() || '').toLowerCase();
       const sub = m.kind === 'tegning' ? 'tegninger' : 'fotos';
-      let blob = null, ext = '';
+      let blob = null, ext = '', gotOriginal = false;
 
       if (m.kind === 'tegning') {
         // Hent ORIGINALEN (rigtig PDF/IFC/dok) — ikke preview-billedet
-        if (rec.originalBlob instanceof Blob) blob = rec.originalBlob;
-        else if (rec.original_storage_path) { try { blob = await fetchBlobFromStorage(rec.original_storage_path); } catch {} }
+        if (rec.originalBlob instanceof Blob) { blob = rec.originalBlob; gotOriginal = true; }
+        else if (rec.original_storage_path) { try { blob = await fetchBlobFromStorage(rec.original_storage_path); gotOriginal = !!(blob && blob.size > 0); } catch {} }
         if (blob && blob.size > 0) {
           ext = okExt(nameExt) ? nameExt : imgExt(blob); // original → behold rigtig filtype
         } else {
@@ -7149,6 +7219,45 @@ async function exportAllZip(btn) {
       rec._exportPath = path;
       files.push({ name: path, data: blob });
       okMedia++;
+
+      // Tegninger med streger/tekst/pins → læg også et "med-markeringer"-billede ved siden af
+      if (m.kind === 'tegning') {
+        const anns = Array.isArray(rec.annotations) ? rec.annotations : [];
+        const tegPins = pinsByTeg[rec.id] || [];
+        if (anns.length || tegPins.length) {
+          const isPdfDoc = rec.type === 'pdf' || nameExt === 'pdf';
+          const pages = [...new Set([...anns.map(a => a.pg || 1), ...tegPins.map(p => p.page || 1)])].sort((a, b) => a - b);
+          // Side-1 PNG-preview (hurtigt + samme dimensioner som tegne-laget) — hentes dovent
+          let previewBlob;
+          const getPreview = async () => {
+            if (previewBlob !== undefined) return previewBlob;
+            previewBlob = rec.blob instanceof Blob ? rec.blob : null;
+            if (!previewBlob && rec.storage_path) { try { previewBlob = await fetchBlobFromStorage(rec.storage_path); } catch { previewBlob = null; } }
+            if (previewBlob && previewBlob.size === 0) previewBlob = null;
+            return previewBlob;
+          };
+          for (const pg of pages) {
+            const pageAnns = anns.filter(a => (a.pg || 1) === pg);
+            const pagePins = tegPins.filter(p => (p.page || 1) === pg);
+            if (!pageAnns.length && !pagePins.length) continue;
+            // Baggrund: side 1 → hurtig PNG-preview; senere sider → render fra original-PDF
+            let bg = null, bgIsPdf = false;
+            if (pg === 1) { const pv = await getPreview(); if (pv) bg = pv; }
+            if (!bg && isPdfDoc && gotOriginal) { bg = blob; bgIsPdf = true; }
+            else if (!bg && !isPdfDoc) bg = blob; // native billede
+            if (!bg) continue;
+            setLbl('Tegner markeringer…');
+            let marked = null;
+            try { marked = await renderMarkedPage(bg, bgIsPdf, pg, pageAnns, pagePins); } catch (e) { console.warn('flatten', rec.name, e); }
+            if (marked && marked.size > 0) {
+              const suffix = pages.length > 1 ? `-side${pg}` : '';
+              const mpath = uniq(`${sagFolder(rec.sagId)}/markeringer/${base}${suffix}-med-markeringer.jpg`);
+              files.push({ name: mpath, data: marked });
+              okMedia++;
+            }
+          }
+        }
+      }
     }
 
     // data.json — komplet backup uden binære blobs (filerne ligger i zip'en, refereret via _exportPath)
