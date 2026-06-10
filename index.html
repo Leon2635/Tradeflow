@@ -1477,7 +1477,7 @@ async function deleteCustomCategory(key) {
 // ============================================================
 // Standard mappestruktur — neutral og licensfri (admin kan selv tilføje/ændre mapper)
 // ============================================================
-const APP_BUILD = '1.23.0 · 10-06-2026';
+const APP_BUILD = '1.23.1 · 10-06-2026';
 const DEFAULT_FOLDERS = [
   { code: 'C01', name: 'Basis' },
   { code: 'C02', name: 'Aftaler' },
@@ -7111,18 +7111,40 @@ async function exportAllZip(btn) {
     const uniq = (path) => { let p = path, i = 1; while (used[p.toLowerCase()]) { const dot = path.lastIndexOf('.'); p = dot > 0 ? path.slice(0, dot) + '-' + (++i) + path.slice(dot) : path + '-' + (++i); } used[p.toLowerCase()] = 1; return p; };
 
     let done = 0, okMedia = 0;
+    const imgExt = (b) => (b && b.type && b.type.includes('png')) ? 'png' : 'jpg';
+    const okExt = (e) => e && e.length <= 5 && /^[a-z0-9]+$/.test(e);
     for (const m of media) {
       done++;
       if (done % 2 === 0 || done === total) { setLbl(`Pakker… ${Math.round(done / Math.max(total, 1) * 100)}%`); await new Promise(r => setTimeout(r, 0)); }
       const rec = m.rec;
-      let blob = rec.blob instanceof Blob ? rec.blob : null;
-      if (!blob && rec.storage_path) { try { blob = await fetchBlobFromStorage(rec.storage_path); } catch {} }
-      if (!blob || blob.size === 0) continue;
-      const src = rec.name || rec.storage_path || '';
-      let ext = (src.split('.').pop() || '').toLowerCase();
-      if (!(ext && ext.length <= 4 && /^[a-z0-9]+$/.test(ext))) ext = (blob.type && blob.type.includes('png')) ? 'png' : 'jpg';
       const base = safe((rec.name || '').replace(/\.[^.]+$/, '')) || (m.kind + '-' + rec.id);
+      const nameExt = ((rec.name || '').split('.').pop() || '').toLowerCase();
       const sub = m.kind === 'tegning' ? 'tegninger' : 'fotos';
+      let blob = null, ext = '';
+
+      if (m.kind === 'tegning') {
+        // Hent ORIGINALEN (rigtig PDF/IFC/dok) — ikke preview-billedet
+        if (rec.originalBlob instanceof Blob) blob = rec.originalBlob;
+        else if (rec.original_storage_path) { try { blob = await fetchBlobFromStorage(rec.original_storage_path); } catch {} }
+        if (blob && blob.size > 0) {
+          ext = okExt(nameExt) ? nameExt : imgExt(blob); // original → behold rigtig filtype
+        } else {
+          // Ingen original i skyen → fald tilbage til preview-billedet (navngiv som billede, ikke .pdf)
+          blob = rec.blob instanceof Blob ? rec.blob : null;
+          if (!blob && rec.storage_path) { try { blob = await fetchBlobFromStorage(rec.storage_path); } catch {} }
+          if (!blob || blob.size === 0) continue;
+          const docLike = rec.type === 'pdf' || ['pdf', 'ifc', 'rvt', 'dwg', 'doc', 'docx', 'xls', 'xlsx'].includes(nameExt);
+          ext = docLike ? imgExt(blob) : (okExt(nameExt) ? nameExt : imgExt(blob));
+        }
+      } else {
+        // Foto: det gemte billede ER originalen
+        blob = rec.blob instanceof Blob ? rec.blob : null;
+        if (!blob && rec.storage_path) { try { blob = await fetchBlobFromStorage(rec.storage_path); } catch {} }
+        if (!blob || blob.size === 0) continue;
+        ext = (okExt(nameExt) && nameExt !== 'pdf') ? nameExt : imgExt(blob);
+      }
+
+      if (!blob || blob.size === 0) continue;
       const path = uniq(`${sagFolder(rec.sagId)}/${sub}/${base}.${ext}`);
       rec._exportPath = path;
       files.push({ name: path, data: blob });
