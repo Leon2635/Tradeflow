@@ -948,7 +948,7 @@
             <div class="text-sm text-ink-500 tabular-nums" id="storage-info">Beregner...</div>
           </div>
           <button class="tap w-full px-4 py-3 flex items-center justify-between text-left" id="btn-export-data">
-            <span class="text-sm text-ink-900">Eksportér backup</span>
+            <span class="text-sm text-ink-900 flex items-center gap-2">📦 Eksportér alt (ZIP)</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgb(var(--c-ink-300))" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
           <button class="tap w-full px-4 py-3 flex items-center justify-between text-left" id="btn-wipe-data">
@@ -1477,7 +1477,7 @@ async function deleteCustomCategory(key) {
 // ============================================================
 // Standard mappestruktur — neutral og licensfri (admin kan selv tilføje/ændre mapper)
 // ============================================================
-const APP_BUILD = '1.22.0 · 10-06-2026';
+const APP_BUILD = '1.23.0 · 10-06-2026';
 const DEFAULT_FOLDERS = [
   { code: 'C01', name: 'Basis' },
   { code: 'C02', name: 'Aftaler' },
@@ -7044,29 +7044,123 @@ async function renderStorageInfo() {
   document.getElementById('storage-info').textContent = `${mb} MB`;
 }
 
-async function exportAllData() {
-  const data = {};
-  for (const store of STORES) {
-    data[store] = await getAll(store);
-    // Convert blobs to base64 (only for photos/tegninger if small enough)
-    if (store === 'fotos' || store === 'tegninger') {
-      for (const item of data[store]) {
-        if (item.blob instanceof Blob) {
-          item._blobBase64 = await blobToBase64(item.blob);
-          delete item.blob;
-        }
-      }
-    }
+// ---- Minimal store-only ZIP writer (ingen ekstern afhængighed, virker offline) ----
+const _crcTable = (() => {
+  const t = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1); t[n] = c >>> 0; }
+  return t;
+})();
+function _crc32(u8) { let c = 0xFFFFFFFF; for (let i = 0; i < u8.length; i++) c = _crcTable[(c ^ u8[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function _dosDateTime(d) {
+  const yr = Math.max(0, d.getFullYear() - 1980);
+  return { date: (yr << 9) | ((d.getMonth() + 1) << 5) | d.getDate(), time: (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1) };
+}
+// files: [{ name, data: Blob|ArrayBuffer|Uint8Array|string }] → Blob (application/zip)
+async function makeZip(files) {
+  const enc = new TextEncoder();
+  const parts = [], central = [];
+  let offset = 0;
+  const { date, time } = _dosDateTime(new Date());
+  for (const f of files) {
+    let data = f.data;
+    if (data instanceof Blob) data = new Uint8Array(await data.arrayBuffer());
+    else if (data instanceof ArrayBuffer) data = new Uint8Array(data);
+    else if (typeof data === 'string') data = enc.encode(data);
+    const nameBytes = enc.encode(f.name);
+    const crc = _crc32(data), size = data.length;
+    const lfh = new DataView(new ArrayBuffer(30));
+    lfh.setUint32(0, 0x04034b50, true); lfh.setUint16(4, 20, true); lfh.setUint16(6, 0x0800, true);
+    lfh.setUint16(8, 0, true); lfh.setUint16(10, time, true); lfh.setUint16(12, date, true);
+    lfh.setUint32(14, crc, true); lfh.setUint32(18, size, true); lfh.setUint32(22, size, true);
+    lfh.setUint16(26, nameBytes.length, true); lfh.setUint16(28, 0, true);
+    parts.push(new Uint8Array(lfh.buffer), nameBytes, data);
+    const cdh = new DataView(new ArrayBuffer(46));
+    cdh.setUint32(0, 0x02014b50, true); cdh.setUint16(4, 20, true); cdh.setUint16(6, 20, true);
+    cdh.setUint16(8, 0x0800, true); cdh.setUint16(10, 0, true); cdh.setUint16(12, time, true); cdh.setUint16(14, date, true);
+    cdh.setUint32(16, crc, true); cdh.setUint32(20, size, true); cdh.setUint32(24, size, true);
+    cdh.setUint16(28, nameBytes.length, true); cdh.setUint32(42, offset, true);
+    central.push(new Uint8Array(cdh.buffer), nameBytes);
+    offset += 30 + nameBytes.length + size;
   }
-  const json = JSON.stringify(data, null, 2);
-  const blob = new Blob([json], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `tradeflow-backup-${new Date().toISOString().slice(0,10)}.json`;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-  toast('Backup downloadet');
+  let centralSize = 0; for (const c of central) centralSize += c.length;
+  const eocd = new DataView(new ArrayBuffer(22));
+  eocd.setUint32(0, 0x06054b50, true); eocd.setUint16(8, files.length, true); eocd.setUint16(10, files.length, true);
+  eocd.setUint32(12, centralSize, true); eocd.setUint32(16, offset, true);
+  return new Blob([...parts, ...central, new Uint8Array(eocd.buffer)], { type: 'application/zip' });
+}
+
+// Fuld eksport som ZIP: data.json + rigtige tegnings-/foto-filer pr. sag + læsbar oversigt
+async function exportAllZip(btn) {
+  const lblEl = btn && btn.querySelector('span');
+  const orig = lblEl ? lblEl.textContent : '';
+  const setLbl = (t) => { if (lblEl) lblEl.textContent = t; };
+  setLbl('Pakker…');
+  try {
+    const all = {};
+    for (const store of STORES) all[store] = await getAll(store);
+    const sagById = {}; (all.sager || []).forEach(s => sagById[s.id] = s);
+    const safe = (s) => ((s || '') + '').replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, ' ').trim().slice(0, 60) || 'uden-navn';
+    const sagFolder = (sagId) => { const s = sagById[sagId]; return s ? `sager/${safe(s.title || s.address || s.id)}` : 'sager/_uden-sag'; };
+
+    const media = [];
+    (all.tegninger || []).forEach(t => { if (!t.deleted) media.push({ kind: 'tegning', rec: t }); });
+    (all.fotos || []).forEach(f => { if (!f.deleted) media.push({ kind: 'foto', rec: f }); });
+    const total = media.length;
+    const files = [];
+    const used = {};
+    const uniq = (path) => { let p = path, i = 1; while (used[p.toLowerCase()]) { const dot = path.lastIndexOf('.'); p = dot > 0 ? path.slice(0, dot) + '-' + (++i) + path.slice(dot) : path + '-' + (++i); } used[p.toLowerCase()] = 1; return p; };
+
+    let done = 0, okMedia = 0;
+    for (const m of media) {
+      done++;
+      if (done % 2 === 0 || done === total) { setLbl(`Pakker… ${Math.round(done / Math.max(total, 1) * 100)}%`); await new Promise(r => setTimeout(r, 0)); }
+      const rec = m.rec;
+      let blob = rec.blob instanceof Blob ? rec.blob : null;
+      if (!blob && rec.storage_path) { try { blob = await fetchBlobFromStorage(rec.storage_path); } catch {} }
+      if (!blob || blob.size === 0) continue;
+      const src = rec.name || rec.storage_path || '';
+      let ext = (src.split('.').pop() || '').toLowerCase();
+      if (!(ext && ext.length <= 4 && /^[a-z0-9]+$/.test(ext))) ext = (blob.type && blob.type.includes('png')) ? 'png' : 'jpg';
+      const base = safe((rec.name || '').replace(/\.[^.]+$/, '')) || (m.kind + '-' + rec.id);
+      const sub = m.kind === 'tegning' ? 'tegninger' : 'fotos';
+      const path = uniq(`${sagFolder(rec.sagId)}/${sub}/${base}.${ext}`);
+      rec._exportPath = path;
+      files.push({ name: path, data: blob });
+      okMedia++;
+    }
+
+    // data.json — komplet backup uden binære blobs (filerne ligger i zip'en, refereret via _exportPath)
+    const clean = JSON.parse(JSON.stringify(all, (k, v) => (k === 'blob' || k === 'originalBlob') ? undefined : v));
+    files.push({ name: 'data.json', data: JSON.stringify({ app: 'TradeFlow', build: APP_BUILD, eksporteret: new Date().toISOString(), data: clean }, null, 2) });
+
+    // OVERSIGT.txt — læsbar opsummering
+    const L = [];
+    L.push('TradeFlow — Eksport', '='.repeat(32), 'Dato: ' + new Date().toLocaleString('da-DK'), 'Build: ' + APP_BUILD, '');
+    (all.sager || []).filter(s => !s.deleted).forEach(s => {
+      const pins = (all.pins || []).filter(p => p.sagId === s.id && !p.deleted);
+      const teg = (all.tegninger || []).filter(t => t.sagId === s.id && !t.deleted);
+      const fot = (all.fotos || []).filter(f => f.sagId === s.id && !f.deleted);
+      L.push('SAG: ' + (s.title || s.address || s.id));
+      if (s.address) L.push('  Adresse: ' + s.address);
+      L.push(`  Tegninger: ${teg.length} · Fotos: ${fot.length} · Markeringer: ${pins.length} (Mangler: ${pins.filter(p => p.type !== 'inquiry').length} · TS: ${pins.filter(p => p.type === 'inquiry').length})`, '');
+    });
+    L.push(`I alt: ${(all.sager || []).filter(s => !s.deleted).length} sager · ${okMedia} mediefiler.`);
+    files.push({ name: 'OVERSIGT.txt', data: L.join('\n') });
+
+    setLbl('Samler ZIP…');
+    const zip = await makeZip(files);
+    const url = URL.createObjectURL(zip);
+    const a = document.createElement('a');
+    a.href = url; a.download = `tradeflow-eksport-${new Date().toISOString().slice(0, 10)}.zip`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    toast(`Eksporteret ✓ (${okMedia} filer)`);
+  } catch (e) {
+    console.error('export zip', e);
+    toast('Eksport fejlede: ' + (e.message || e));
+  } finally {
+    setLbl(orig);
+  }
 }
 
 function blobToBase64(blob) {
@@ -7362,7 +7456,7 @@ function setupSettings() {
     const u = new URL(location.href); u.searchParams.set('v', Date.now());
     location.replace(u.toString());
   });
-  document.getElementById('btn-export-data').addEventListener('click', exportAllData);
+  document.getElementById('btn-export-data').addEventListener('click', (e) => exportAllZip(e.currentTarget));
   document.getElementById('btn-wipe-data').addEventListener('click', wipeAllData);
   // GDPR
   document.getElementById('btn-privacy-policy')?.addEventListener('click', () => openModal('modal-privacy'));
