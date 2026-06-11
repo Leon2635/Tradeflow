@@ -983,15 +983,13 @@
         <!-- ===== PRIVATLIV ===== -->
         <div class="px-2 pt-3 text-[11px] uppercase tracking-wider text-ink-500 font-bold">Privatliv & GDPR</div>
 
-        <div class="bg-surface rounded-2xl border border-border shadow-soft overflow-hidden divide-y divide-border">
+        <div class="bg-surface rounded-2xl border border-border shadow-soft overflow-hidden">
           <button class="tap w-full px-4 py-3 flex items-center gap-3 text-left" id="btn-privacy-policy">
             <div class="w-8 h-8 rounded-lg bg-emerald-50 text-ok flex items-center justify-center shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
-            <span class="flex-1 text-sm font-semibold text-ink-900">Privatlivspolitik</span>
-            <svg class="shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgb(var(--c-ink-300))" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-          <button class="tap w-full px-4 py-3 flex items-center gap-3 text-left" id="btn-export-my-data">
-            <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
-            <span class="flex-1 text-sm font-semibold text-ink-900">Eksportér mine data</span>
+            <span class="flex-1 min-w-0">
+              <span class="block text-sm font-semibold text-ink-900">Privatlivspolitik</span>
+              <span class="block text-[11px] text-ink-500">Dine rettigheder · eksportér dine data</span>
+            </span>
             <svg class="shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgb(var(--c-ink-300))" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
         </div>
@@ -1022,27 +1020,38 @@
           </a>
         </div>
 
-        <!-- ===== FARLIG ZONE ===== -->
-        <div class="px-2 pt-3 text-[11px] uppercase tracking-wider font-bold text-bad">Farlig zone</div>
-
-        <div class="bg-surface rounded-2xl border border-bad/30 shadow-soft overflow-hidden divide-y divide-border">
-          <button class="tap w-full px-4 py-3 flex items-center gap-3 text-left" id="btn-wipe-data">
-            <div class="w-8 h-8 rounded-lg bg-red-50 text-bad flex items-center justify-center shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></div>
-            <span class="flex-1 min-w-0">
-              <span class="block text-sm font-semibold text-bad">Slet alle data på enheden</span>
-              <span class="block text-[11px] text-ink-500">Rydder appen lokalt — skyen røres ikke</span>
-            </span>
-            <svg class="shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-          <button class="tap w-full px-4 py-3 flex items-center gap-3 text-left" id="btn-delete-account">
-            <div class="w-8 h-8 rounded-lg bg-red-50 text-bad flex items-center justify-center shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="17" y1="8" x2="22" y2="13"/><line x1="22" y1="8" x2="17" y2="13"/></svg></div>
-            <span class="flex-1 min-w-0">
-              <span class="block text-sm font-semibold text-bad">Slet min konto & data</span>
-              <span class="block text-[11px] text-ink-500">Fjerner dine personoplysninger permanent (GDPR)</span>
-            </span>
-            <svg class="shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
+        <!-- Planlagt konto-sletning (vises kun hvis aktiv — kan fortrydes) -->
+        <div id="delete-scheduled-row" class="hidden bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 flex items-center gap-3">
+          <span class="text-[18px] shrink-0">⏳</span>
+          <span class="flex-1 min-w-0 text-[12px] text-amber-900 leading-snug">Din konto slettes <b data-del-date></b>. Du kan fortryde indtil da.</span>
+          <button class="tap shrink-0 text-xs font-bold bg-surface border border-border text-ink-900 rounded-lg px-3 py-2" id="btn-cancel-delete">Fortryd</button>
         </div>
+
+        <!-- ===== AVANCERET (skjult som standard) ===== -->
+        <details class="pt-1">
+          <summary class="tap list-none cursor-pointer px-2 py-1.5 text-[11px] text-ink-500 font-semibold flex items-center gap-1 select-none">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            Avanceret
+          </summary>
+          <div class="mt-2 bg-surface rounded-2xl border border-bad/30 shadow-soft overflow-hidden divide-y divide-border">
+            <button class="tap w-full px-4 py-3 flex items-center gap-3 text-left" id="btn-wipe-data">
+              <div class="w-8 h-8 rounded-lg bg-red-50 text-bad flex items-center justify-center shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></div>
+              <span class="flex-1 min-w-0">
+                <span class="block text-sm font-semibold text-bad">Slet alle data på enheden</span>
+                <span class="block text-[11px] text-ink-500">Rydder appen lokalt — skyen røres ikke</span>
+              </span>
+              <svg class="shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            <button class="tap w-full px-4 py-3 flex items-center gap-3 text-left" id="btn-delete-account">
+              <div class="w-8 h-8 rounded-lg bg-red-50 text-bad flex items-center justify-center shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="17" y1="8" x2="22" y2="13"/><line x1="22" y1="8" x2="17" y2="13"/></svg></div>
+              <span class="flex-1 min-w-0">
+                <span class="block text-sm font-semibold text-bad">Slet min konto & data</span>
+                <span class="block text-[11px] text-ink-500">Udføres først efter 7 dage — kan fortrydes</span>
+              </span>
+              <svg class="shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </details>
 
         <div class="text-center text-[10px] text-ink-500 py-2">© 2026 TradeFlow · Lavet i Danmark</div>
       </div>
@@ -1223,7 +1232,11 @@
           Data gemmes så længe kontoen/organisationen er aktiv. Slettede elementer ligger i papirkurven indtil de slettes permanent.</div>
 
         <div><div class="font-bold text-ink-900 mb-1">7. Dine rettigheder</div>
-          Du har ret til indsigt, berigtigelse, sletning, dataportabilitet og indsigelse. Brug <b>"Eksportér mine data"</b> og <b>"Slet min konto & data"</b> i Indstillinger — eller kontakt os.</div>
+          Du har ret til indsigt, berigtigelse, sletning, dataportabilitet og indsigelse. Hent dine data med knappen herunder, eller brug <b>"Slet min konto & data"</b> under Indstillinger → Avanceret — sletning udføres efter 7 dages fortrydelsesfrist.
+          <button class="tap mt-2 w-full bg-clay-400 hover:bg-clay-500 text-white font-bold rounded-xl py-3 text-sm flex items-center justify-center gap-2" id="btn-export-my-data">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Eksportér mine data
+          </button></div>
 
         <div><div class="font-bold text-ink-900 mb-1">8. Klage</div>
           Du kan klage til Datatilsynet, <a href="https://www.datatilsynet.dk" target="_blank" rel="noopener" class="text-clay-500 font-semibold">datatilsynet.dk</a>.</div>
@@ -1527,7 +1540,7 @@ async function deleteCustomCategory(key) {
 // ============================================================
 // Standard mappestruktur — neutral og licensfri (admin kan selv tilføje/ændre mapper)
 // ============================================================
-const APP_BUILD = '1.26.0 · 10-06-2026';
+const APP_BUILD = '1.27.0 · 10-06-2026';
 const DEFAULT_FOLDERS = [
   { code: 'C01', name: 'Basis' },
   { code: 'C02', name: 'Aftaler' },
@@ -7395,14 +7408,48 @@ async function exportMyData() {
   toast('Dine data er downloadet ✓');
 }
 
-// GDPR: ret til sletning — anonymiser profilen (fjern personoplysninger), log ud og ryd lokal data
+// GDPR: ret til sletning — med 7 dages fortrydelsesfrist.
+// Anmodningen gemmes lokalt; sletningen udføres først når fristen er udløbet (ved næste app-start).
+const DELETE_GRACE_DAYS = 7;
+function getPendingDelete() { try { return JSON.parse(localStorage.getItem('tf_delete_account') || 'null'); } catch { return null; } }
+function setPendingDelete(v) { try { v ? localStorage.setItem('tf_delete_account', JSON.stringify(v)) : localStorage.removeItem('tf_delete_account'); } catch {} }
+
 async function deleteMyAccount() {
   const u = currentProfile;
   if (!u || !u.id) { toast('Du er ikke logget ind'); return; }
+  const p = getPendingDelete();
+  if (p && p.uid === u.id) { toast('Sletning er allerede planlagt — se øverst i Avanceret'); renderPendingDeleteRow(); return; }
   if (u.role === 'owner' && !confirm('Du er EJER af organisationen. Sletter du din konto, mister du adgang — organisationens sager/data bevares hos virksomheden. Vil du fortsætte?')) return;
-  if (!confirm('Slet din konto og fjern dine personlige oplysninger (navn, e-mail)? Dette kan IKKE fortrydes.')) return;
+  if (!confirm(`Slet din konto og dine personlige oplysninger (navn, e-mail)?\n\nFor en sikkerheds skyld udføres sletningen først om ${DELETE_GRACE_DAYS} dage — du kan fortryde indtil da her i Indstillinger.`)) return;
   const t = prompt('Skriv SLET med store bogstaver for at bekræfte:');
   if (!t || t.trim().toUpperCase() !== 'SLET') { toast('Annulleret'); return; }
+  const at = Date.now() + DELETE_GRACE_DAYS * 86400000;
+  setPendingDelete({ at, uid: u.id });
+  renderPendingDeleteRow();
+  alert(`Din konto er planlagt til sletning ${new Date(at).toLocaleDateString('da-DK', { day: 'numeric', month: 'long', year: 'numeric' })}.\n\nFortryd når som helst inden da: Indstillinger → "Fortryd".`);
+}
+
+function cancelAccountDeletion() {
+  setPendingDelete(null);
+  renderPendingDeleteRow();
+  toast('Sletning fortrudt — din konto beholdes ✓');
+}
+
+// Viser/skjuler den gule "konto slettes [dato]"-bjælke i Indstillinger
+function renderPendingDeleteRow() {
+  const row = document.getElementById('delete-scheduled-row');
+  if (!row) return;
+  const p = getPendingDelete();
+  const mine = p && currentProfile && p.uid === currentProfile.id;
+  row.classList.toggle('hidden', !mine);
+  if (mine) {
+    const el = row.querySelector('[data-del-date]');
+    if (el) el.textContent = new Date(p.at).toLocaleDateString('da-DK', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+}
+
+// Selve sletningen (kører først når fristen er udløbet)
+async function executeAccountDeletionNow(u) {
   toast('Sletter dine oplysninger…');
   try {
     await supa.from('profiles').update({ name: 'Slettet bruger', email: `slettet-${u.id}@slettet.invalid`, company: null, trade: null, disabled: true }).eq('id', u.id);
@@ -7410,8 +7457,18 @@ async function deleteMyAccount() {
   try { await supa.auth.signOut(); } catch {}
   try { db.close(); } catch {}
   try { await new Promise(res => { const r = indexedDB.deleteDatabase(DB_NAME); r.onsuccess = res; r.onerror = res; r.onblocked = res; }); } catch {}
-  alert('Din konto og dine personlige oplysninger er fjernet. Appen genstarter nu.');
+  alert('Din konto og dine personlige oplysninger er nu fjernet (7-dages fristen udløb). Appen genstarter.');
   location.reload();
+}
+
+// Kaldes ved app-start: udfør planlagt sletning hvis fristen er udløbet
+async function checkScheduledDeletion() {
+  const p = getPendingDelete();
+  if (!p || Date.now() < p.at) return;
+  try {
+    const u = await getCurrentUser();
+    if (u && u.id === p.uid) { setPendingDelete(null); await executeAccountDeletionNow(u); }
+  } catch (e) { console.warn('scheduled delete', e); }
 }
 
 let _orgLogo = null;
@@ -7459,6 +7516,7 @@ function openSettings() {
   renderNavOrderSettings();
   populateTradeSelect();
   refreshTrashBadge();
+  renderPendingDeleteRow();
   loadOrgLogo().then(renderLogoPreview);
   loadSetting('theme', 'dark').then(applyTheme);
   getCurrentUser().then(u => {
@@ -7646,6 +7704,8 @@ function setupSettings() {
   document.getElementById('btn-privacy-policy')?.addEventListener('click', () => openModal('modal-privacy'));
   document.getElementById('btn-export-my-data')?.addEventListener('click', exportMyData);
   document.getElementById('btn-delete-account')?.addEventListener('click', deleteMyAccount);
+  document.getElementById('btn-cancel-delete')?.addEventListener('click', cancelAccountDeletion);
+  checkScheduledDeletion(); // udfør evt. planlagt konto-sletning hvis 7-dages fristen er udløbet
   document.getElementById('btn-invite')?.addEventListener('click', sendInvite);
   document.getElementById('btn-copy-invite')?.addEventListener('click', copyInvite);
   document.getElementById('toggle-testmode')?.addEventListener('change', e => {
