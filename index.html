@@ -1477,7 +1477,7 @@ async function deleteCustomCategory(key) {
 // ============================================================
 // Standard mappestruktur — neutral og licensfri (admin kan selv tilføje/ændre mapper)
 // ============================================================
-const APP_BUILD = '1.25.1 · 10-06-2026';
+const APP_BUILD = '1.25.2 · 10-06-2026';
 const DEFAULT_FOLDERS = [
   { code: 'C01', name: 'Basis' },
   { code: 'C02', name: 'Aftaler' },
@@ -4100,7 +4100,7 @@ function renderFolderFiles(filesDiv, here, folders) {
     return `<div class="flex items-center gap-2 px-3 py-2.5 border-b border-border last:border-0">
       <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 font-extrabold text-[8px] tracking-tight" style="background:${ft.bg};color:${ft.fg}">${ft.abbr}</div>
       <button class="tap flex-1 min-w-0 text-left" data-open-file="${escapeHtml(t.id)}">
-        <div class="text-[11px] font-semibold text-ink-900 leading-snug" style="overflow-wrap:anywhere">${wrapName(t.name)}</div>
+        <div class="font-semibold text-ink-900" style="font-size:9px;line-height:1.2;overflow-wrap:anywhere">${wrapName(t.name)}</div>
       </button>
       <span class="w-8 text-right text-[10px] text-ink-500 shrink-0">${ft.abbr}</span>
       <span class="w-12 text-right text-[10px] text-ink-500 shrink-0 tabular-nums">${szStr}</span>
