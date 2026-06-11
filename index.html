@@ -839,42 +839,39 @@
           </label>
         </div>
 
-        <!-- ===== FIRMA & HOLD ===== -->
-        <div class="px-2 pt-3 text-[11px] uppercase tracking-wider text-ink-500 font-bold">Firma & hold</div>
-
-        <!-- Firma-logo (vises på PDF-rapporter) -->
-        <div class="bg-surface rounded-2xl border border-border shadow-soft px-4 py-3" id="settings-logo-section">
-          <div class="flex items-center gap-3">
-            <div class="w-14 h-14 rounded-xl bg-paper border border-border flex items-center justify-center overflow-hidden shrink-0">
-              <img id="logo-preview" class="max-w-full max-h-full hidden" alt="logo">
-              <span id="logo-placeholder" class="text-[10px] text-ink-400 text-center px-1">Intet logo</span>
-            </div>
-            <div class="flex-1 min-w-0">
-              <div class="text-sm font-semibold text-ink-900">Firma-logo</div>
-              <div class="text-[11px] text-ink-500 mb-1.5">Vises øverst på PDF-rapporter</div>
-              <div class="flex items-center gap-3">
-                <label class="tap inline-flex items-center gap-1.5 bg-clay-400 hover:bg-clay-500 text-white font-bold rounded-lg px-3 py-1.5 text-xs cursor-pointer">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                  Upload
-                  <input type="file" accept="image/*" class="hidden" id="input-logo">
-                </label>
-                <button class="tap text-[12px] font-semibold text-bad hidden" id="btn-remove-logo">Fjern</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Administrator / team (admin only — minimeret, punkt 5) -->
+        <!-- Administrator: firma-logo + hold & invitationer (kun admins) -->
         <details id="settings-admin-section" class="bg-surface rounded-2xl border border-border shadow-soft overflow-hidden hidden">
           <summary class="px-4 py-3 flex items-center gap-3 cursor-pointer list-none">
             <span class="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
             <div class="flex-1 min-w-0">
-              <div class="text-sm font-semibold text-ink-900">Hold & invitationer</div>
-              <div class="text-[11px] text-ink-500">Inviter kolleger og styr roller</div>
+              <div class="text-sm font-semibold text-ink-900">Administrator</div>
+              <div class="text-[11px] text-ink-500">Firma-logo · hold & invitationer</div>
             </div>
             <span class="text-[10px] font-bold bg-clay-50 text-clay-500 px-2 py-1 rounded-md shrink-0">Vis ▾</span>
           </summary>
           <div class="p-4 border-t border-border">
+            <!-- Firma-logo (vises på PDF-rapporter) -->
+            <div class="mb-4" id="settings-logo-section">
+              <div class="flex items-center gap-3">
+                <div class="w-14 h-14 rounded-xl bg-paper border border-border flex items-center justify-center overflow-hidden shrink-0">
+                  <img id="logo-preview" class="max-w-full max-h-full hidden" alt="logo">
+                  <span id="logo-placeholder" class="text-[10px] text-ink-400 text-center px-1">Intet logo</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm font-semibold text-ink-900">Firma-logo</div>
+                  <div class="text-[11px] text-ink-500 mb-1.5">Vises øverst på PDF-rapporter</div>
+                  <div class="flex items-center gap-3">
+                    <label class="tap inline-flex items-center gap-1.5 bg-clay-400 hover:bg-clay-500 text-white font-bold rounded-lg px-3 py-1.5 text-xs cursor-pointer">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                      Upload
+                      <input type="file" accept="image/*" class="hidden" id="input-logo">
+                    </label>
+                    <button class="tap text-[12px] font-semibold text-bad hidden" id="btn-remove-logo">Fjern</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="text-[11px] uppercase tracking-wider text-ink-500 font-bold mb-2">Hold & invitationer</div>
             <!-- Invite -->
             <div class="mb-3 space-y-2">
               <label class="text-[11px] uppercase tracking-wider text-ink-500 font-bold">Inviter person</label>
@@ -1540,7 +1537,7 @@ async function deleteCustomCategory(key) {
 // ============================================================
 // Standard mappestruktur — neutral og licensfri (admin kan selv tilføje/ændre mapper)
 // ============================================================
-const APP_BUILD = '1.27.0 · 10-06-2026';
+const APP_BUILD = '1.28.0 · 10-06-2026';
 const DEFAULT_FOLDERS = [
   { code: 'C01', name: 'Basis' },
   { code: 'C02', name: 'Aftaler' },
@@ -2974,11 +2971,15 @@ async function backfillToCloud(silent) {
   const needsOriginal = t => t.type !== 'image' && !t.original_storage_path &&
     (t.type === 'pdf' || (t.type || '').startsWith('bim-') || t.type === 'other' || t.type === 'unknown');
   const broken = all.filter(t => !t.deleted && (!t.storage_path || needsOriginal(t)));
-  if (!broken.length) { if (!silent) toast('Alt er allerede i skyen ✓'); return 0; }
+  const brokenFotos = (await getAll('fotos')).filter(f => !f.deleted && !f.storage_path);
+  if (!broken.length && !brokenFotos.length) { if (!silent) toast('Alt er allerede i skyen ✓'); return 0; }
 
   // Gruppér pr. sag → én storage-list pr. sag (effektivt)
   const bySag = {};
   for (const t of broken) (bySag[t.sagId] ||= []).push(t);
+  const fotosBySag = {};
+  for (const f of brokenFotos) (fotosBySag[f.sagId] ||= []).push(f);
+  for (const sagId of Object.keys(fotosBySag)) bySag[sagId] ||= []; // sager med kun foto-problemer
   let relinked = 0, uploaded = 0, stillMissing = 0;
 
   for (const [sagId, items] of Object.entries(bySag)) {
@@ -3011,6 +3012,23 @@ async function backfillToCloud(silent) {
         catch (e) { console.warn('reupload', e); stillMissing++; }
       } else if (!t.storage_path || needsOriginal(t)) {
         stillMissing++; // hverken i sky eller lokalt → kræver gen-upload fra kilde-enheden
+      }
+    }
+
+    // FOTOS i samme sag: genkobl fra storage, ellers gen-upload lokal blob
+    for (const f of (fotosBySag[sagId] || [])) {
+      const m = files.find(x => x.name.startsWith('foto_' + f.id + '.'));
+      if (m) {
+        f.storage_path = `${folder}/${m.name}`;
+        f.needsUpload = false;
+        try { await put('fotos', f); relinked++; continue; } catch (e) { console.warn('foto relink', e); }
+      }
+      if (f.blob instanceof Blob) {
+        if (!silent) toast(`Lægger fotos op ${uploaded + 1}…`);
+        try { await put('fotos', f); if (f.storage_path) uploaded++; else stillMissing++; }
+        catch (e) { console.warn('foto reupload', e); stillMissing++; }
+      } else {
+        stillMissing++;
       }
     }
   }
@@ -6587,6 +6605,56 @@ async function downloadBlobFromStorage(fullPath) {
   return data;
 }
 
+// Komprimér kamera-fotos før gem/upload. Rå mobilfotos (3-12 MB) fejler ofte
+// på byggepladsens net — 1920px JPEG (~300-600 KB) uploader 10x mere pålideligt.
+async function compressPhoto(file, maxSide = 1920, quality = 0.82) {
+  try {
+    if (!file || !file.type || !file.type.startsWith('image/')) return file;
+    if (file.size < 400000) return file; // allerede lille nok
+    let src = null, iw = 0, ih = 0;
+    try { src = await createImageBitmap(file); iw = src.width; ih = src.height; } catch {}
+    if (!src) {
+      const url = URL.createObjectURL(file);
+      try {
+        src = await new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = url; });
+        iw = src.naturalWidth; ih = src.naturalHeight;
+      } finally { setTimeout(() => URL.revokeObjectURL(url), 4000); }
+    }
+    if (!iw || !ih) return file;
+    const s = Math.min(1, maxSide / Math.max(iw, ih));
+    const c = document.createElement('canvas');
+    c.width = Math.round(iw * s); c.height = Math.round(ih * s);
+    c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+    if (src.close) try { src.close(); } catch {}
+    const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', quality));
+    if (!blob || blob.size >= file.size) return file; // komprimering hjalp ikke → behold original
+    return new File([blob], ((file.name || 'foto').replace(/\.[^.]+$/, '') || 'foto') + '.jpg', { type: 'image/jpeg' });
+  } catch (e) { console.warn('compress', e); return file; }
+}
+
+// GEN-FORSØGS-PUMPE: fotos/tegninger der ligger lokalt men mangler i skyen
+// gen-uploades automatisk (interval + når nettet kommer tilbage) — før krævede det reload.
+let _retryPumpBusy = false;
+async function retryPendingUploads() {
+  if (_retryPumpBusy || !navigator.onLine) return;
+  const u = await getCurrentUser().catch(() => null);
+  if (!u?.orgId) return;
+  _retryPumpBusy = true;
+  try {
+    let n = 0;
+    const fotos = (await getAll('fotos')).filter(f => !f.deleted && f.blob instanceof Blob && !f.storage_path);
+    for (const f of fotos.slice(0, 6)) { // få ad gangen — skån nettet
+      try { await put('fotos', f); if (f.storage_path) n++; } catch (e) { console.warn('foto retry', e); }
+    }
+    const tegs = (await getAll('tegninger')).filter(t => !t.deleted && t.needsUpload &&
+      ((t.blob instanceof Blob && !t.storage_path) || (t.originalBlob instanceof Blob && t.type !== 'image' && !t.original_storage_path)));
+    for (const t of tegs.slice(0, 3)) {
+      try { await put('tegninger', t); if (!t.needsUpload) n++; } catch (e) { console.warn('tegning retry', e); }
+    }
+    if (n) { toast(`✓ ${n} fil(er) lagt i skyen`); rerenderActiveScreen(); }
+  } finally { _retryPumpBusy = false; }
+}
+
 // Auto-sync: override put/del so ALL writes go to both local IDB and Supabase
 const _localPut = put;
 const _localDel = del;
@@ -6708,6 +6776,10 @@ function justWrote(id) {
 
 window.put = async function(store, value) {
   if (value && typeof value === 'object') value.updatedAt = Date.now(); // til "lokal er nyere"-guard
+  // Fotos: komprimér før gem/upload (kun nye/ikke-uploadede — hentede sky-fotos røres ikke)
+  if (store === 'fotos' && value && value.blob instanceof Blob && !value.storage_path) {
+    value.blob = await compressPhoto(value.blob);
+  }
   await _localPut(store, value);
   if (!CLOUD_STORES.includes(store)) return value;
   if (value && value.id) recentWrites.set(value.id, Date.now());
@@ -6796,6 +6868,11 @@ function startAutoSync() {
     if (document.visibilityState === 'visible') syncAndRender();
   });
   window.addEventListener('focus', syncAndRender);
+
+  // Gen-forsøg ventende uploads: fast puls + straks når nettet kommer tilbage
+  window.addEventListener('online', () => setTimeout(retryPendingUploads, 1500));
+  if (!window._retryPumpTimer) window._retryPumpTimer = setInterval(retryPendingUploads, 25000);
+  setTimeout(retryPendingUploads, 4000); // saml op fra sidste session kort efter start
 
   // REALTIME: subscribe to DB changes → sync instantly (no waiting)
   try {
