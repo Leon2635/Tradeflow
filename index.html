@@ -825,27 +825,13 @@
           <!-- Filled by JS -->
         </div>
 
-        <!-- Test mode: se som medarbejder (kun ægte admins) -->
-        <div id="settings-testmode-section" class="hidden bg-surface rounded-2xl border border-border shadow-soft px-4 py-3">
-          <label class="flex items-center justify-between gap-3 cursor-pointer">
-            <span class="flex items-center gap-3 min-w-0">
-              <span class="w-8 h-8 rounded-lg bg-purple-50 text-purple-700 flex items-center justify-center shrink-0 text-[15px]">🧪</span>
-              <span class="min-w-0">
-                <span class="block text-sm font-semibold text-ink-900">Test som medarbejder</span>
-                <span class="block text-[11px] text-ink-500">Se appen som medarbejder (kun denne enhed)</span>
-              </span>
-            </span>
-            <input type="checkbox" id="toggle-testmode" class="w-6 h-6 accent-clay-400 shrink-0">
-          </label>
-        </div>
-
-        <!-- Administrator: firma-logo + hold & invitationer (kun admins) -->
+        <!-- Administrator: firma-logo + test-tilstand + hold & invitationer (kun admins) -->
         <details id="settings-admin-section" class="bg-surface rounded-2xl border border-border shadow-soft overflow-hidden hidden">
           <summary class="px-4 py-3 flex items-center gap-3 cursor-pointer list-none">
             <span class="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
             <div class="flex-1 min-w-0">
               <div class="text-sm font-semibold text-ink-900">Administrator</div>
-              <div class="text-[11px] text-ink-500">Firma-logo · hold & invitationer</div>
+              <div class="text-[11px] text-ink-500">Firma-logo · test-tilstand · hold & invitationer</div>
             </div>
             <span class="text-[10px] font-bold bg-clay-50 text-clay-500 px-2 py-1 rounded-md shrink-0">Vis ▾</span>
           </summary>
@@ -870,6 +856,19 @@
                   </div>
                 </div>
               </div>
+            </div>
+            <!-- Test mode: se som medarbejder (kun ægte admins) -->
+            <div id="settings-testmode-section" class="hidden mb-4 bg-paper border border-border rounded-xl px-3 py-2.5">
+              <label class="flex items-center justify-between gap-3 cursor-pointer">
+                <span class="flex items-center gap-3 min-w-0">
+                  <span class="w-8 h-8 rounded-lg bg-purple-50 text-purple-700 flex items-center justify-center shrink-0 text-[15px]">🧪</span>
+                  <span class="min-w-0">
+                    <span class="block text-sm font-semibold text-ink-900">Test som medarbejder</span>
+                    <span class="block text-[11px] text-ink-500">Se appen som medarbejder (kun denne enhed)</span>
+                  </span>
+                </span>
+                <input type="checkbox" id="toggle-testmode" class="w-6 h-6 accent-clay-400 shrink-0">
+              </label>
             </div>
             <div class="text-[11px] uppercase tracking-wider text-ink-500 font-bold mb-2">Hold & invitationer</div>
             <!-- Invite -->
@@ -1537,7 +1536,7 @@ async function deleteCustomCategory(key) {
 // ============================================================
 // Standard mappestruktur — neutral og licensfri (admin kan selv tilføje/ændre mapper)
 // ============================================================
-const APP_BUILD = '1.28.0 · 10-06-2026';
+const APP_BUILD = '1.29.0 · 10-06-2026';
 const DEFAULT_FOLDERS = [
   { code: 'C01', name: 'Basis' },
   { code: 'C02', name: 'Aftaler' },
@@ -2603,7 +2602,9 @@ async function exportSagReport(sagId) {
     // Foto-cache pr. pin og pr. KS-punkt (som data-URL)
     const pinPhotos = {};
     for (const p of pins) {
-      const fs = (await getByIndex('fotos', 'by_pin', p.id)).filter(f => f.blob);
+      const fsAll = await getByIndex('fotos', 'by_pin', p.id);
+      await hydrateFotos(fsAll); // hent manglende billeder så rapporten er komplet
+      const fs = fsAll.filter(f => f.blob);
       pinPhotos[p.id] = (await Promise.all(fs.map(f => imgToDataURL(f.blob)))).filter(Boolean);
     }
 
@@ -2645,7 +2646,9 @@ async function exportSagReport(sagId) {
       const rows = [];
       for (const it of items) {
         const stt = it.status === 'ok' ? { t: 'OK', c: '#1F9D55' } : (it.status === 'afvigelse' ? { t: 'Afvigelse', c: '#D97706' } : { t: 'Afventer', c: '#64748B' });
-        const photos = (await Promise.all((it.photoIds || []).map(id => getOne('fotos', id)))).filter(f => f && f.blob);
+        const photosAll = (await Promise.all((it.photoIds || []).map(id => getOne('fotos', id)))).filter(Boolean);
+      await hydrateFotos(photosAll);
+      const photos = photosAll.filter(f => f.blob);
         const urls = (await Promise.all(photos.map(f => imgToDataURL(f.blob)))).filter(Boolean);
         rows.push(`<div class="item">
           <div class="item-head"><div class="item-title">${esc(it.title)}</div><div class="badge" style="background:${stt.c}">${stt.t}</div></div>
@@ -2661,7 +2664,9 @@ async function exportSagReport(sagId) {
     }
 
     // Løse billeder på sagen (tilføjet via "Billede"-knappen, ikke knyttet til en pin/KS)
-    const looseFotos = (await getAll('fotos')).filter(f => f.sagId === sagId && f.blob && !f.pinId && !f.ksItemId)
+    const looseAll = (await getAll('fotos')).filter(f => f.sagId === sagId && !f.pinId && !f.ksItemId && !f.deleted);
+    await hydrateFotos(looseAll);
+    const looseFotos = looseAll.filter(f => f.blob)
       .sort((a, b) => (a.takenAt || 0) - (b.takenAt || 0));
     let billederHtml = '';
     if (looseFotos.length) {
@@ -2708,7 +2713,8 @@ let _lightboxUrls = [];
 async function openFotoGallery(sagId) {
   let fotos = await getAll('fotos');
   if (sagId) fotos = fotos.filter(f => f.sagId === sagId);
-  fotos = fotos.filter(f => f.blob).sort((a, b) => (b.takenAt || 0) - (a.takenAt || 0));
+  await hydrateFotos(fotos); // hent manglende billeder fra skyen i stedet for at skjule dem
+  fotos = fotos.filter(f => f.blob instanceof Blob && f.blob.size).sort((a, b) => (b.takenAt || 0) - (a.takenAt || 0));
   const sag = sagId ? await getOne('sager', sagId) : null;
   document.getElementById('fotos-subtitle').textContent = sag ? sag.title : 'Alle billeder';
   const grid = document.getElementById('fotos-grid');
@@ -3078,6 +3084,23 @@ async function fetchBlobFromStorage(path) {
       _lastStorageErr = (e2.message || e2) + ''; throw e2;
     }
   }
+}
+
+// Fotos: hent manglende billede fra skyen on-demand (og cache det lokalt).
+// Uden dette blev fotos uden lokalt cachet billede usynlige — eller væltede hele rækken ved visning.
+async function ensureFotoBlob(f) {
+  if (!f) return null;
+  if (f.blob instanceof Blob && f.blob.size) return f.blob;
+  if (!f.storage_path) return null;
+  try {
+    const blob = await fetchBlobFromStorage(f.storage_path);
+    if (blob && blob.size) { f.blob = blob; try { await _localPut('fotos', f); } catch {} return blob; }
+  } catch (e) { console.warn('foto hent', f.id, e); }
+  return null;
+}
+async function hydrateFotos(list) {
+  const missing = (list || []).filter(f => f && !(f.blob instanceof Blob && f.blob.size) && f.storage_path);
+  if (missing.length) await Promise.allSettled(missing.map(ensureFotoBlob));
 }
 
 // Selv-helende: find en fils objekter i storage og gem stierne i databasen.
@@ -5335,7 +5358,8 @@ async function renderPinModal() {
     if (!d.isNew) renderPinComments(d.id);
   }
 
-  // Render photos strip — med slet-knap på hvert foto
+  // Render photos strip — med slet-knap på hvert foto.
+  // Manglende billeder hentes fra skyen først, og ét defekt foto må aldrig vælte resten.
   const strip = document.getElementById('pin-photo-strip');
   strip.querySelectorAll('.thumb').forEach(el => el.remove());
   const existing = d.existingPhotos || [];
@@ -5343,14 +5367,18 @@ async function renderPinModal() {
   document.getElementById('pin-photo-count').textContent = existing.length + pending.length;
   const hint = document.getElementById('pin-photo-empty-hint');
   hint.classList.toggle('hidden', (existing.length + pending.length) > 0);
-  existing.forEach(f => addDeletableThumb(strip, URL.createObjectURL(f.blob), async () => {
-    if (!confirm('Slet dette foto?')) return;
-    await del('fotos', f.id);
-    d.existingPhotos = (d.existingPhotos || []).filter(x => x.id !== f.id);
-    renderPinModal();
-  }, f.blob ? () => openPhotoDraw(URL.createObjectURL(f.blob), async (blob) => {
-    f.blob = blob; f.storage_path = ''; await put('fotos', f); toast('Foto opdateret'); renderPinModal();
-  }) : null));
+  await hydrateFotos(existing);
+  existing.forEach(f => {
+    if (!(f.blob instanceof Blob) || !f.blob.size) return; // kunne ikke hentes endnu — spring over, vælt ikke resten
+    addDeletableThumb(strip, URL.createObjectURL(f.blob), async () => {
+      if (!confirm('Slet dette foto?')) return;
+      await del('fotos', f.id);
+      d.existingPhotos = (d.existingPhotos || []).filter(x => x.id !== f.id);
+      renderPinModal();
+    }, () => openPhotoDraw(URL.createObjectURL(f.blob), async (blob) => {
+      f.blob = blob; f.storage_path = ''; await put('fotos', f); toast('Foto opdateret'); renderPinModal();
+    }));
+  });
   pending.forEach(f => addDeletableThumb(strip, URL.createObjectURL(f), () => {
     const i = d.photos.indexOf(f);
     if (i >= 0) d.photos.splice(i, 1);
@@ -5814,7 +5842,9 @@ async function exportKSReport(instanceId) {
     const rows = [];
     for (const it of items) {
       const stt = it.status === 'ok' ? { t: 'OK', c: '#1F9D55' } : (it.status === 'afvigelse' ? { t: 'Afvigelse', c: '#D97706' } : { t: 'Afventer', c: '#64748B' });
-      const photos = (await Promise.all((it.photoIds || []).map(id => getOne('fotos', id)))).filter(f => f && f.blob);
+      const photosAll = (await Promise.all((it.photoIds || []).map(id => getOne('fotos', id)))).filter(Boolean);
+      await hydrateFotos(photosAll);
+      const photos = photosAll.filter(f => f.blob);
       const urls = (await Promise.all(photos.map(f => imgToDataURL(f.blob)))).filter(Boolean);
       rows.push(`<div class="item"><div class="item-head"><div class="item-title">${esc(it.title)}</div><div class="badge" style="background:${stt.c}">${stt.t}</div></div>
         <table class="meta">${it.assignedToName ? `<tr><td>Ansvarlig</td><td>${esc(it.assignedToName)}</td></tr>` : ''}${it.deadline ? `<tr><td>Deadline</td><td>${repDate(it.deadline)}</td></tr>` : ''}${it.note ? `<tr><td>Note</td><td>${esc(it.note)}</td></tr>` : ''}</table>
@@ -5930,7 +5960,8 @@ async function renderKSItemPhotos() {
   const existingPhotos = (await Promise.all((it.photoIds || []).map(id => getOne('fotos', id)))).filter(Boolean);
   const empty = document.getElementById('ks-item-photos-empty');
   empty.classList.toggle('hidden', (existingPhotos.length + ksState.pendingPhotos.length) > 0);
-  existingPhotos.forEach(f => addDeletableThumb(strip, URL.createObjectURL(f.blob), async () => {
+  await hydrateFotos(existingPhotos); // hent manglende billeder fra skyen
+  existingPhotos.filter(f => f.blob instanceof Blob && f.blob.size).forEach(f => addDeletableThumb(strip, URL.createObjectURL(f.blob), async () => {
     if (!confirm('Slet dette foto?')) return;
     await del('fotos', f.id);
     const item = await getOne('ks_items', ksState.itemId);
@@ -7606,8 +7637,9 @@ function openSettings() {
     // Show admin/team section only for admins (respects test mode)
     const adminSec = document.getElementById('settings-admin-section');
     if (adminSec) {
-      adminSec.classList.toggle('hidden', !(u && isAdmin()));
-      if (u && isAdmin()) renderTeam();
+      // Brug den FAKTISKE rolle: i testtilstand skal boksen stadig vises, ellers kan man ikke slå testtilstand fra
+      adminSec.classList.toggle('hidden', !(u && isRealAdmin()));
+      if (u && isRealAdmin()) renderTeam();
     }
     // Test-mode toggle only visible to REAL admins
     const testSec = document.getElementById('settings-testmode-section');
