@@ -456,6 +456,27 @@
         </button>
       </div>
 
+      <!-- DESKTOP: søgning + typefilter (vises kun ≥1024px) -->
+      <div class="dtonly">
+        <div class="flex items-center gap-3">
+          <div class="relative flex-1 max-w-md">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-ink-500 pointer-events-none" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input id="doc-search" type="text" placeholder="Søg i filer og mapper…" class="w-full bg-surface border border-border rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:border-clay-400">
+          </div>
+          <div class="relative">
+            <select id="doc-type-filter" class="appearance-none bg-surface border border-border rounded-xl pl-3 pr-9 py-2.5 text-sm font-semibold text-ink-900 focus:outline-none focus:border-clay-400">
+              <option value="">Alle typer</option>
+              <option value="pdf">PDF</option>
+              <option value="img">Billeder</option>
+              <option value="teg">Tegninger (PDF + billeder)</option>
+              <option value="bim">Modeller (IFC/RVT/DWG)</option>
+              <option value="doc">Øvrige dokumenter</option>
+            </select>
+            <svg class="absolute right-3 top-1/2 -translate-y-1/2 text-ink-500 pointer-events-none" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+      </div>
+
       <!-- Subfolders -->
       <div id="folder-subfolders" class="space-y-1.5"></div>
 
@@ -1606,7 +1627,7 @@ async function deleteCustomCategory(key) {
 // ============================================================
 // Standard mappestruktur — neutral og licensfri (admin kan selv tilføje/ændre mapper)
 // ============================================================
-const APP_BUILD = '1.33.0 · 12-06-2026';
+const APP_BUILD = '1.34.0 · 12-06-2026';
 const DEFAULT_FOLDERS = [
   { code: 'C01', name: 'Basis' },
   { code: 'C02', name: 'Aftaler' },
@@ -1891,7 +1912,14 @@ function dtNav(key) {
   if (key === 'settings') { openSettings(); return; } // modal — skift ikke aktiv side
   dtSetActive(key);
   if (key === 'home') showScreen('home');
-  else if (key === 'docs' || key === 'tegninger' || key === 'modeller') showScreen('plan'); // fase 7: filtrerede visninger
+  else if (key === 'docs' || key === 'tegninger' || key === 'modeller') {
+    // Tegninger/Modeller = Dokumenter med forudindstillet typefilter
+    docTypeFilter = key === 'tegninger' ? 'teg' : key === 'modeller' ? 'bim' : '';
+    docSearchQuery = '';
+    const sel = document.getElementById('doc-type-filter'); if (sel) sel.value = docTypeFilter;
+    const inp = document.getElementById('doc-search'); if (inp) inp.value = '';
+    showScreen('plan');
+  }
   else if (key === 'mangler') { jobsTab = 'mangler'; showScreen('jobs'); }
   else if (key === 'ts') { jobsTab = 'ts'; showScreen('jobs'); }
   else if (key === 'ks') showScreen('ks');
@@ -1933,6 +1961,16 @@ function setupDt() {
   document.getElementById('dt-bell')?.addEventListener('click', () => document.getElementById('btn-notifications')?.click());
   document.getElementById('dt-search')?.addEventListener('keydown', e => {
     if (e.key === 'Enter') toast('Global søgning kommer i en senere opdatering');
+  });
+  // Dokument-søgning + typefilter (desktop)
+  let _docSearchT = 0;
+  document.getElementById('doc-search')?.addEventListener('input', e => {
+    clearTimeout(_docSearchT);
+    _docSearchT = setTimeout(() => { docSearchQuery = e.target.value; renderFolders(); }, 200);
+  });
+  document.getElementById('doc-type-filter')?.addEventListener('change', e => {
+    docTypeFilter = e.target.value;
+    renderFolders();
   });
   dtUpdateChrome();
 }
@@ -4313,8 +4351,33 @@ function fileSizeLabel(t) {
 }
 
 // Tabel-visning (punkt 6): mapper + filer i samme tabel med kolonner Navn · Type · Størrelse · Ændret
+// Desktop-søgning/-filter i Dokumenter (sættes af #doc-search/#doc-type-filter og af sidebarens Tegninger/Modeller)
+let docSearchQuery = '';
+let docTypeFilter = '';
+function docMatchesType(t) {
+  if (!docTypeFilter) return true;
+  const ext = ((t.name || '').split('.').pop() || '').toLowerCase();
+  const isPdf = t.type === 'pdf' || ext === 'pdf';
+  const isImg = t.type === 'image' || ['jpg', 'jpeg', 'png', 'webp', 'heic', 'gif'].includes(ext);
+  const isBim = (t.type || '').startsWith('bim-') || ['ifc', 'rvt', 'dwg'].includes(ext);
+  if (docTypeFilter === 'pdf') return isPdf;
+  if (docTypeFilter === 'img') return isImg;
+  if (docTypeFilter === 'teg') return isPdf || isImg;
+  if (docTypeFilter === 'bim') return isBim;
+  if (docTypeFilter === 'doc') return !isPdf && !isImg && !isBim;
+  return true;
+}
+
 function renderFolderFiles(filesDiv, here, folders) {
   folders = folders || [];
+  // Anvend desktop-søgning/-filter (no-op når tomme — mobil er upåvirket)
+  const q = (docSearchQuery || '').trim().toLowerCase();
+  if (q) {
+    here = here.filter(t => (t.name || '').toLowerCase().includes(q));
+    folders = folders.filter(f => (f.name || '').toLowerCase().includes(q));
+  }
+  if (docTypeFilter) here = here.filter(docMatchesType);
+  const filterActive = !!(q || docTypeFilter);
   const admin = isAdmin();
   const sorted = here.slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
   const hereIds = new Set(sorted.map(t => t.id));
@@ -4323,7 +4386,9 @@ function renderFolderFiles(filesDiv, here, folders) {
 
   if (folders.length + sorted.length === 0) {
     fileSelectMode = false; selectedFileIds.clear();
-    filesDiv.innerHTML = `<div class="text-sm text-ink-500 text-center py-8">Mappen er tom. Tryk "Tilføj fil" for at uploade.</div>`;
+    filesDiv.innerHTML = filterActive
+      ? `<div class="text-sm text-ink-500 text-center py-8">Ingen filer matcher søgningen/filteret.</div>`
+      : `<div class="text-sm text-ink-500 text-center py-8">Mappen er tom. Tryk "Tilføj fil" for at uploade.</div>`;
     return;
   }
 
