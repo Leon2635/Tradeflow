@@ -151,6 +151,14 @@
     #modal-settings > .absolute { left:auto; width:460px; border-left:1px solid rgb(var(--c-border)); box-shadow:-16px 0 48px rgba(0,0,0,0.28); }
     .toast { position:fixed; top:84px; }
 
+    /* MANGLER/TS på desktop: detaljen åbner som højre-panel ved siden af listen (2-panel) */
+    #modal-pin > div:first-child { background:transparent; backdrop-filter:none; -webkit-backdrop-filter:none; }
+    #modal-pin > div:last-child { left:auto; right:0; top:0; bottom:0; width:480px; max-height:none;
+      border-radius:0; border-top:0; border-left:1px solid rgb(var(--c-border)); box-shadow:-16px 0 48px rgba(0,0,0,0.28); }
+    #jobs-list { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; align-items:start; }
+    #jobs-list > * { margin:0 !important; }
+    #jobs-list > :only-child { grid-column:1/-1; }
+
     /* SAG-DASHBOARD på desktop: sags-kort + nøgletal erstatter mobil-overskrift og -fliser */
     .dtonly { display:block; }
     #screen-home > .text-center:first-child { display:none; }   /* mobil-overskrift — sags-kortet viser titlen */
@@ -425,6 +433,23 @@
         <button class="jobs-tab tap py-2 px-1 rounded-lg text-[11px] font-bold flex flex-col items-center gap-0.5" data-jobs-tab="afvist">
           <span>Afvist</span><span class="text-[10px] tabular-nums font-bold" id="tab-count-afvist">0</span>
         </button>
+      </div>
+      <!-- DESKTOP: statusfilter + søgning (vises kun ≥1024px) -->
+      <div class="dtonly">
+        <div class="flex items-center gap-3 flex-wrap">
+          <div class="flex items-center gap-1.5" id="jobs-status-chips">
+            <button class="jchip tap text-xs font-bold rounded-lg px-3 py-2 bg-surface border border-border text-ink-700" data-jstatus="">Alle</button>
+            <button class="jchip tap text-xs font-bold rounded-lg px-3 py-2 bg-surface border border-border text-ink-700" data-jstatus="open">Åben</button>
+            <button class="jchip tap text-xs font-bold rounded-lg px-3 py-2 bg-surface border border-border text-ink-700" data-jstatus="assigned">I gang</button>
+            <button class="jchip tap text-xs font-bold rounded-lg px-3 py-2 bg-surface border border-border text-ink-700" data-jstatus="draft">Afventer</button>
+            <button class="jchip tap text-xs font-bold rounded-lg px-3 py-2 bg-surface border border-border text-ink-700" data-jstatus="_lukket">Lukket</button>
+            <button class="jchip tap text-xs font-bold rounded-lg px-3 py-2 bg-surface border border-border text-ink-700" data-jstatus="_afvist">Afvist</button>
+          </div>
+          <div class="relative flex-1 min-w-[220px] max-w-sm ml-auto">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-ink-500 pointer-events-none" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input id="jobs-search" type="text" placeholder="Søg i mangler og TS…" class="w-full bg-surface border border-border rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:border-clay-400">
+          </div>
+        </div>
       </div>
       <div class="space-y-2.5" id="jobs-list">
         <!-- Filled by JS -->
@@ -1627,7 +1652,7 @@ async function deleteCustomCategory(key) {
 // ============================================================
 // Standard mappestruktur — neutral og licensfri (admin kan selv tilføje/ændre mapper)
 // ============================================================
-const APP_BUILD = '1.34.0 · 12-06-2026';
+const APP_BUILD = '1.35.0 · 12-06-2026';
 const DEFAULT_FOLDERS = [
   { code: 'C01', name: 'Basis' },
   { code: 'C02', name: 'Aftaler' },
@@ -1971,6 +1996,21 @@ function setupDt() {
   document.getElementById('doc-type-filter')?.addEventListener('change', e => {
     docTypeFilter = e.target.value;
     renderFolders();
+  });
+  // Mangler/TS: statusfilter-chips + søgning (desktop)
+  document.getElementById('jobs-status-chips')?.addEventListener('click', e => {
+    const c = e.target.closest('[data-jstatus]');
+    if (!c) return;
+    const v = c.dataset.jstatus;
+    if (v === '_lukket') { jobsStatusFilter = ''; jobsTab = 'fuldfoert'; }   // Lukket = Fuldført-arkivet
+    else if (v === '_afvist') { jobsStatusFilter = ''; jobsTab = 'afvist'; }
+    else jobsStatusFilter = v;
+    renderJobs();
+  });
+  let _jobsSearchT = 0;
+  document.getElementById('jobs-search')?.addEventListener('input', e => {
+    clearTimeout(_jobsSearchT);
+    _jobsSearchT = setTimeout(() => { jobsSearchQuery = e.target.value; renderJobs(); }, 200);
   });
   dtUpdateChrome();
 }
@@ -2469,9 +2509,27 @@ async function renderJobs() {
   }
 
   // Mangler / TS
-  const arr = jobsTab === 'ts' ? ts : mangler;
+  let arr = jobsTab === 'ts' ? ts : mangler;
+  // Desktop-filtre (no-op når neutrale — mobil upåvirket)
+  const jq = (typeof jobsSearchQuery === 'string' ? jobsSearchQuery : '').trim().toLowerCase();
+  const jFilterActive = !!(jq || (typeof jobsStatusFilter === 'string' && jobsStatusFilter));
+  if (jobsStatusFilter === 'open') arr = arr.filter(p => !p.status || p.status === 'open');
+  else if (jobsStatusFilter === 'assigned') arr = arr.filter(p => p.status === 'assigned');
+  else if (jobsStatusFilter === 'draft') arr = arr.filter(p => p.status === 'draft');
+  if (jq) arr = arr.filter(p => (p.note || '').toLowerCase().includes(jq) || (p.assignedToName || '').toLowerCase().includes(jq) || (p.workerNote || '').toLowerCase().includes(jq));
+  // Chip-markering
+  document.querySelectorAll('#jobs-status-chips .jchip').forEach(c => {
+    const on = c.dataset.jstatus === (jobsStatusFilter || '');
+    c.classList.toggle('bg-clay-400', on);
+    c.classList.toggle('bg-surface', !on);
+    c.classList.toggle('text-ink-700', !on);
+  });
   const qType = jobsTab === 'ts' ? 'inquiry' : 'mangel';
   const qLabel = jobsTab === 'ts' ? 'tekniske forespørgsler' : 'mangler';
+  if (arr.length === 0 && jFilterActive) {
+    list.innerHTML = `<div class="bg-surface border border-border rounded-xl p-6 text-center text-sm text-ink-500">Ingen ${qLabel} matcher filteret/søgningen.</div>`;
+    return;
+  }
   if (arr.length === 0) {
     // Tom tilstand: ikon + tekst der peger på "+" nederst (FAB forbliver synlig)
     const isTs = jobsTab === 'ts';
@@ -4354,6 +4412,9 @@ function fileSizeLabel(t) {
 // Desktop-søgning/-filter i Dokumenter (sættes af #doc-search/#doc-type-filter og af sidebarens Tegninger/Modeller)
 let docSearchQuery = '';
 let docTypeFilter = '';
+// Desktop-filtre på Mangler/TS-listerne
+let jobsSearchQuery = '';
+let jobsStatusFilter = '';
 function docMatchesType(t) {
   if (!docTypeFilter) return true;
   const ext = ((t.name || '').split('.').pop() || '').toLowerCase();
