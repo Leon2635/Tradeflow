@@ -144,11 +144,15 @@
     #dt-top { display:flex; grid-area:top; }
     #app > header { display:none; }   /* mobil-toppen erstattes af desktop-topbaren */
     #app > nav { display:none; }      /* bundmenu erstattes af venstremenuen */
-    #fab { display:none; }
+    /* "Opret"-knap nederst til højre (erstatter bundmenuens +) — så mangler/TS/KS kan oprettes på PC */
+    #fab { right:32px !important; bottom:32px !important; width:auto; height:auto; padding:13px 22px;
+           border-radius:9999px; gap:8px; }
+    #fab-label { display:inline !important; }
     #app > main { grid-area:main; min-height:0; }
-    main .screen { max-width:1180px; margin:0 auto; padding:28px 40px 90px; width:100%; }
-    /* Indstillinger som højre-skuffe i stedet for fuldskærm */
-    #modal-settings > .absolute { left:auto; width:460px; border-left:1px solid rgb(var(--c-border)); box-shadow:-16px 0 48px rgba(0,0,0,0.28); }
+    main .screen { max-width:1180px; margin:0 auto; padding:28px 40px 110px; width:100%; }
+    /* Indstillinger som højre-skuffe i stedet for fuldskærm; backdrop dæmper resten og lukker ved klik */
+    #modal-settings > #settings-panel { left:auto; width:460px; border-left:1px solid rgb(var(--c-border)); box-shadow:-16px 0 48px rgba(0,0,0,0.28); }
+    #settings-backdrop { background:rgba(0,0,0,0.38); }
     .toast { position:fixed; top:84px; }
 
     /* MANGLER/TS på desktop: detaljen åbner som højre-panel ved siden af listen (2-panel) */
@@ -920,7 +924,8 @@
 
   <!-- ====== SETTINGS MODAL ====== -->
   <div id="modal-settings" class="absolute inset-0 z-50 hidden">
-    <div class="absolute inset-0 bg-paper flex flex-col">
+    <div id="settings-backdrop" class="absolute inset-0" data-close-modal></div>
+    <div id="settings-panel" class="absolute inset-0 bg-paper flex flex-col">
       <div class="bg-surface border-b border-border px-5 py-4 flex items-center gap-3">
         <button class="tap w-9 h-9 rounded-full bg-soft text-ink-700 flex items-center justify-center" data-close-modal>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
@@ -1534,8 +1539,9 @@
   </div>
 
   <!-- Fast +-knap (FAB) — hurtig oprettelse (punkt 1) -->
-  <button id="fab" class="absolute right-5 z-40 w-10 h-10 rounded-full bg-clay-400 hover:bg-clay-500 text-white shadow-card flex items-center justify-center" style="bottom: calc(max(env(safe-area-inset-bottom, 0px), 12px) + 70px);" aria-label="Opret">
+  <button id="fab" class="absolute right-5 z-40 w-10 h-10 rounded-full bg-clay-400 hover:bg-clay-500 text-white shadow-card flex items-center justify-center gap-2" style="bottom: calc(max(env(safe-area-inset-bottom, 0px), 12px) + 70px);" aria-label="Opret">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    <span id="fab-label" class="hidden font-bold text-[15px] whitespace-nowrap">Opret</span>
   </button>
 
   <!-- Hurtig-opret handlingsark -->
@@ -1652,7 +1658,7 @@ async function deleteCustomCategory(key) {
 // ============================================================
 // Standard mappestruktur — neutral og licensfri (admin kan selv tilføje/ændre mapper)
 // ============================================================
-const APP_BUILD = '1.37.0 · 13-06-2026';
+const APP_BUILD = '1.38.0 · 13-06-2026';
 const DEFAULT_FOLDERS = [
   { code: 'C01', name: 'Basis' },
   { code: 'C02', name: 'Aftaler' },
@@ -6637,6 +6643,18 @@ function setupModals() {
     const modal = closer.closest('[id^="modal-"]');
     if (!modal) return;
     // Auto-kladde: gem uafsluttet arbejde inden vinduet lukkes
+    if (modal.id === 'modal-pin') autosavePinDraft(true);
+    else if (modal.id === 'modal-ks-item') autosaveKSItem();
+    modal.classList.add('hidden');
+  });
+
+  // Escape lukker det øverste åbne vindue (sikkerhedsnet på PC/tablet med tastatur)
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    const open = [...document.querySelectorAll('[id^="modal-"]')]
+      .filter(m => !m.classList.contains('hidden'));
+    if (!open.length) return;
+    const modal = open[open.length - 1];
     if (modal.id === 'modal-pin') autosavePinDraft(true);
     else if (modal.id === 'modal-ks-item') autosaveKSItem();
     modal.classList.add('hidden');
