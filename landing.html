@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TradeFlow — Faktura, tilsyn og BIM på din lomme</title>
-<meta name="description" content="Den danske håndværker-app der samler tidsregistrering, fakturering, foto-dokumentation og BIM-tilsyn med IFC/Revit i én app. Fra 199 kr/md. 14 dages gratis prøve.">
+<meta name="description" content="Den danske håndværker-app til tilsyn og dokumentation: sager, tegninger, mangler, KS, fotos og BIM med IFC/Revit — plus faktura. Fra 199 kr/md. 14 dages gratis prøve.">
 <meta name="theme-color" content="#06090F">
-<meta property="og:title" content="TradeFlow — Faktura, tilsyn og BIM på din lomme">
-<meta property="og:description" content="Tidsregistrering, foto-dokumentation, fakturering og BIM-tilsyn med IFC/Revit — i én dansk app.">
+<meta property="og:title" content="TradeFlow — Tilsyn, dokumentation og BIM på din lomme">
+<meta property="og:description" content="Sager, tegninger, mangler, KS, fotos og BIM-tilsyn med IFC/Revit — plus faktura. I én dansk app.">
 <meta property="og:type" content="website">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
@@ -146,8 +146,9 @@
         Faktura, tilsyn<br>og <span class="ink-grad">BIM</span> — i lommen.
       </h1>
       <p class="reveal text-lg lg:text-xl text-txt-300 leading-relaxed max-w-xl mb-9">
-        Den danske håndværker-app der erstatter Excel, Dropbox og papir-notesblok.
-        Tidsregistrering, foto-dokumentation, fakturering og BIM-tilsyn på 2D/3D-tegninger med GPS — samlet ét sted.
+        Den danske håndværker-app til tilsyn og dokumentation. Saml sager, tegninger,
+        mangler, KS og fotos ét sted — placér tilsyn med GPS på 2D/3D-tegninger, lav PDF-rapporter
+        og send faktura. Virker også offline på pladsen.
       </p>
       <div class="reveal flex flex-wrap gap-3 mb-7">
         <a href="#pricing" class="btn-amber font-bold px-7 py-4 rounded-2xl text-[15px]">Prøv gratis i 14 dage</a>
@@ -166,47 +167,52 @@
     <!-- Phone + floating cards -->
     <div class="reveal relative flex justify-center lg:justify-end">
       <div class="absolute -inset-6 bg-amber-400/10 blur-3xl rounded-full -z-10" aria-hidden="true"></div>
-      <div class="phone floaty">
+      <div class="phone floaty" style="background:#F4F1EA">
         <div class="island"></div>
-        <div class="pt-14 px-5">
-          <div class="eyebrow text-txt-500">God morgen</div>
-          <div class="text-base font-semibold text-txt-100 mb-3">Mikkel Sørensen</div>
-          <div class="rounded-2xl p-3.5 mb-3 border border-amber-400/30" style="background:linear-gradient(160deg,rgba(245,179,1,0.16),transparent)">
-            <div class="flex items-center gap-1.5 mb-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-amber-400 pulse"></span>
-              <span class="eyebrow text-amber-300" style="font-size:9px">Tid kører</span>
+        <div class="pt-14 px-4" style="color:#1A1F2B">
+          <div class="text-center">
+            <div style="font-size:10px;color:#8A8576">Velkommen</div>
+            <div class="text-base font-bold" style="color:#1A1F2B">Hansens Vej 12</div>
+          </div>
+          <!-- fremdrift -->
+          <div class="rounded-2xl p-3 mt-3" style="background:#fff;border:1px solid #E7E3DA;box-shadow:0 1px 2px rgba(0,0,0,0.04)">
+            <div class="flex items-center justify-between mb-1.5">
+              <span style="font-size:10px;font-weight:700;color:#6B7280">Fuldført</span>
+              <span class="tnum" style="font-size:11px;font-weight:800;color:#1A1F2B">68%</span>
             </div>
-            <div class="text-3xl font-bold tnum text-txt-100">02:14:48</div>
-            <div class="text-[10px] text-txt-300 mt-0.5">Nyt badeværelse — Hansens Vej 12</div>
+            <div style="height:7px;background:#EFEBE2;border-radius:99px;overflow:hidden"><div style="width:68%;height:100%;background:#F5B301;border-radius:99px"></div></div>
           </div>
-          <div class="grid grid-cols-3 gap-1.5">
-            <div class="card rounded-xl p-2"><div class="eyebrow text-txt-500" style="font-size:8px">I dag</div><div class="text-sm font-bold tnum">6,2t</div></div>
-            <div class="card rounded-xl p-2"><div class="eyebrow text-txt-500" style="font-size:8px">Uge</div><div class="text-sm font-bold tnum">28,5t</div></div>
-            <div class="card rounded-xl p-2"><div class="eyebrow text-txt-500" style="font-size:8px">Ufakt.</div><div class="text-sm font-bold tnum">18.420</div></div>
+          <!-- 4 status-fliser -->
+          <div class="grid grid-cols-2 gap-1.5 mt-2.5">
+            <div class="rounded-xl p-2.5" style="background:#fff;border:1px solid #E7E3DA"><div style="font-size:8px;text-transform:uppercase;letter-spacing:.08em;color:#8A8576;font-weight:700">Mangler</div><div class="tnum" style="font-size:18px;font-weight:800;color:#1A1F2B">7</div></div>
+            <div class="rounded-xl p-2.5" style="background:#fff;border:1px solid #E7E3DA"><div style="font-size:8px;text-transform:uppercase;letter-spacing:.08em;color:#8A8576;font-weight:700">TS</div><div class="tnum" style="font-size:18px;font-weight:800;color:#1A1F2B">3</div></div>
+            <div class="rounded-xl p-2.5" style="background:#fff;border:1px solid #E7E3DA"><div style="font-size:8px;text-transform:uppercase;letter-spacing:.08em;color:#8A8576;font-weight:700">KS</div><div class="tnum" style="font-size:18px;font-weight:800;color:#1A1F2B">12</div></div>
+            <div class="rounded-xl p-2.5" style="background:#fff;border:1px solid #E7E3DA"><div style="font-size:8px;text-transform:uppercase;letter-spacing:.08em;color:#8A8576;font-weight:700">Afvist</div><div class="tnum" style="font-size:18px;font-weight:800;color:#1A1F2B">1</div></div>
           </div>
-          <div class="mt-3 text-[10px] font-semibold text-txt-100">Sager i dag</div>
+          <!-- kræver handling -->
+          <div class="mt-3" style="font-size:10px;font-weight:700;color:#1A1F2B">Kræver din handling</div>
           <div class="mt-1.5 space-y-1.5">
-            <div class="card rounded-xl p-2 flex items-center gap-2">
-              <div class="w-6 h-6 rounded-lg bg-amber-400/15 text-amber-300 text-[8px] font-bold flex items-center justify-center border border-amber-400/20">HV</div>
-              <div class="flex-1 text-[10px] truncate">Hansens Vej 12</div>
-              <span class="text-[8px] bg-amber-400/15 text-amber-300 px-1.5 py-0.5 rounded-md border border-amber-400/20">I gang</span>
+            <div class="rounded-xl p-2 flex items-center gap-2" style="background:#fff;border:1px solid #E7E3DA">
+              <span class="w-6 h-6 rounded-lg flex items-center justify-center shrink-0" style="background:#FCEFD0;color:#C98A00"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+              <div class="flex-1" style="font-size:10px;color:#1A1F2B;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Revne i fuge — bad, 2. sal</div>
+              <span style="font-size:8px;font-weight:700;background:#FCEFD0;color:#C98A00;padding:2px 6px;border-radius:6px">Åben</span>
             </div>
-            <div class="card rounded-xl p-2 flex items-center gap-2">
-              <div class="w-6 h-6 rounded-lg bg-surface2 text-txt-300 text-[8px] font-bold flex items-center justify-center border border-border">LP</div>
-              <div class="flex-1 text-[10px] truncate">Lindevej 4</div>
-              <span class="text-[8px] bg-surface2 text-txt-300 px-1.5 py-0.5 rounded-md border border-border">Næste</span>
+            <div class="rounded-xl p-2 flex items-center gap-2" style="background:#fff;border:1px solid #E7E3DA">
+              <span class="w-6 h-6 rounded-lg flex items-center justify-center shrink-0" style="background:#E8F1FF;color:#2563EB"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+              <div class="flex-1" style="font-size:10px;color:#1A1F2B;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">TS: type gulvafløb?</div>
+              <span style="font-size:8px;font-weight:700;background:#E8F1FF;color:#2563EB;padding:2px 6px;border-radius:6px">I gang</span>
             </div>
           </div>
         </div>
       </div>
-      <!-- floating invoice chip -->
+      <!-- floating chip: KS signeret -->
       <div class="hidden sm:block absolute -left-2 lg:left-2 top-16 glass border hairline rounded-2xl px-3.5 py-3 floaty" style="animation-delay:-2s">
         <div class="flex items-center gap-2">
           <div class="w-8 h-8 rounded-lg bg-ok/15 text-ok flex items-center justify-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></div>
-          <div><div class="text-[11px] font-bold text-txt-100">Faktura sendt</div><div class="text-[9px] text-txt-500 tnum">12.480 kr · e-Boks</div></div>
+          <div><div class="text-[11px] font-bold text-txt-100">KS signeret</div><div class="text-[9px] text-txt-500">Kontrolplan · 12/12</div></div>
         </div>
       </div>
-      <!-- floating pin chip -->
+      <!-- floating chip: tilsyn placeret -->
       <div class="hidden sm:block absolute -right-1 lg:right-1 bottom-20 glass border hairline rounded-2xl px-3.5 py-3 floaty" style="animation-delay:-4s">
         <div class="flex items-center gap-2">
           <div class="w-8 h-8 rounded-lg bg-amber-400/15 text-amber-300 flex items-center justify-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
@@ -217,16 +223,25 @@
   </div>
 </header>
 
-<!-- ================= TRUST MARQUEE ================= -->
-<section class="py-10 border-y border-border/70 overflow-hidden" aria-label="Brugt af håndværkere">
-  <div class="text-center eyebrow text-txt-500 mb-6">Brugt af håndværkere over hele Danmark</div>
-  <div class="relative">
-    <div class="marquee text-txt-700 font-bold text-xl">
-      <span>Holm VVS</span><span>Nordjysk El</span><span>Bjerg Tømrer</span><span>KH Murerfirma</span><span>VestEgnens Maler</span><span>Bygma+</span><span>Dahl Anlæg</span>
-      <span aria-hidden="true">Holm VVS</span><span aria-hidden="true">Nordjysk El</span><span aria-hidden="true">Bjerg Tømrer</span><span aria-hidden="true">KH Murerfirma</span><span aria-hidden="true">VestEgnens Maler</span><span aria-hidden="true">Bygma+</span><span aria-hidden="true">Dahl Anlæg</span>
+<!-- ================= VALUE BADGES ================= -->
+<section class="py-10 border-y border-border/70 px-5 lg:px-8" aria-label="Derfor TradeFlow">
+  <div class="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-3">
+    <div class="reveal flex items-center gap-2.5 justify-center text-center md:text-left">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2" class="shrink-0" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <span class="text-sm font-semibold text-txt-100">GDPR-compliant</span>
     </div>
-    <div class="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-bg to-transparent" aria-hidden="true"></div>
-    <div class="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-bg to-transparent" aria-hidden="true"></div>
+    <div class="reveal flex items-center gap-2.5 justify-center text-center md:text-left">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2" class="shrink-0" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <span class="text-sm font-semibold text-txt-100">EU-server</span>
+    </div>
+    <div class="reveal flex items-center gap-2.5 justify-center text-center md:text-left">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2" class="shrink-0" aria-hidden="true"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+      <span class="text-sm font-semibold text-txt-100">Virker offline</span>
+    </div>
+    <div class="reveal flex items-center gap-2.5 justify-center text-center md:text-left">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2" class="shrink-0" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+      <span class="text-sm font-semibold text-txt-100">Dansk support</span>
+    </div>
   </div>
 </section>
 
@@ -234,20 +249,20 @@
 <section class="py-16 lg:py-20 px-5 lg:px-8">
   <div class="max-w-7xl mx-auto grid grid-cols-2 lg:grid-cols-4 gap-px bg-border/70 rounded-3xl overflow-hidden border border-border/70">
     <div class="reveal bg-bg p-7 lg:p-9 text-center">
-      <div class="display text-4xl lg:text-5xl ink-grad">2 min</div>
-      <div class="text-sm text-txt-300 mt-2">fra download til første faktura</div>
+      <div class="display text-4xl lg:text-5xl ink-grad">2D + 3D</div>
+      <div class="text-sm text-txt-300 mt-2">tegninger og BIM-modeller i appen</div>
     </div>
     <div class="reveal bg-bg p-7 lg:p-9 text-center">
-      <div class="display text-4xl lg:text-5xl ink-grad">+18 dage</div>
-      <div class="text-sm text-txt-300 mt-2">hurtigere likviditet i snit</div>
+      <div class="display text-4xl lg:text-5xl ink-grad">GPS</div>
+      <div class="text-sm text-txt-300 mt-2">tilsyn placeret præcist på tegningen</div>
     </div>
     <div class="reveal bg-bg p-7 lg:p-9 text-center">
-      <div class="display text-4xl lg:text-5xl ink-grad">100%</div>
-      <div class="text-sm text-txt-300 mt-2">data på EU-servere</div>
+      <div class="display text-4xl lg:text-5xl ink-grad">Offline</div>
+      <div class="text-sm text-txt-300 mt-2">arbejd uden net — synker bagefter</div>
     </div>
     <div class="reveal bg-bg p-7 lg:p-9 text-center">
-      <div class="display text-4xl lg:text-5xl ink-grad">4,8<span class="text-2xl align-top">★</span></div>
-      <div class="text-sm text-txt-300 mt-2">i app-vurdering</div>
+      <div class="display text-4xl lg:text-5xl ink-grad">EU</div>
+      <div class="text-sm text-txt-300 mt-2">al data på europæiske servere</div>
     </div>
   </div>
 </section>
@@ -265,31 +280,22 @@
       <!-- Big feature -->
       <div class="reveal card lift rounded-3xl p-7 md:col-span-2 lg:row-span-2 flex flex-col">
         <div class="w-12 h-12 rounded-2xl bg-amber-400/10 border border-amber-400/20 text-amber-300 flex items-center justify-center mb-5">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
         </div>
-        <h3 class="text-xl font-bold mb-2">Tidsregistrering med ét tryk</h3>
-        <p class="text-[15px] text-txt-300 leading-relaxed mb-6 max-w-md">Start timer på sagen direkte fra forsiden. Automatisk pause-detektering og kørsels-tracking via GPS — så hvert minut bliver faktureret.</p>
-        <!-- mini timer visual -->
+        <h3 class="text-xl font-bold mb-2">Sagsoverblik, mangler &amp; KS</h3>
+        <p class="text-[15px] text-txt-300 leading-relaxed mb-6 max-w-md">Hold styr på hver sag: fremdrift, mangler, tekniske spørgsmål og kvalitetssikring i ét overblik. Fem statusser — fra åben til afvist — så intet falder mellem to stole.</p>
+        <!-- mini status visual -->
         <div class="mt-auto card rounded-2xl p-5 border-amber-400/15">
           <div class="flex items-center justify-between mb-3">
-            <span class="eyebrow text-amber-300">Aktiv sag</span>
-            <span class="text-[11px] text-txt-500">Hansens Vej 12</span>
+            <span class="eyebrow text-amber-300">Hansens Vej 12</span>
+            <span class="text-[11px] text-txt-500 tnum">68% fuldført</span>
           </div>
-          <div class="flex items-end gap-3">
-            <div class="tnum text-4xl lg:text-5xl font-bold">02:14<span class="text-txt-500">:48</span></div>
-            <div class="flex gap-1.5 mb-2">
-              <span class="w-9 h-9 rounded-xl bg-amber-400/15 border border-amber-400/25 text-amber-300 flex items-center justify-center"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg></span>
-              <span class="w-9 h-9 rounded-xl btn-amber flex items-center justify-center"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="6 4 20 12 6 20 6 4"/></svg></span>
-            </div>
-          </div>
-          <div class="mt-4 grid grid-cols-7 gap-1.5 items-end h-12" aria-hidden="true">
-            <div class="bg-amber-400/30 rounded" style="height:40%"></div>
-            <div class="bg-amber-400/50 rounded" style="height:70%"></div>
-            <div class="bg-amber-400/40 rounded" style="height:55%"></div>
-            <div class="bg-amber-400 rounded" style="height:100%"></div>
-            <div class="bg-amber-400/60 rounded" style="height:80%"></div>
-            <div class="bg-amber-400/30 rounded" style="height:35%"></div>
-            <div class="bg-amber-400/50 rounded" style="height:60%"></div>
+          <div class="h-2 rounded-full bg-surface2 overflow-hidden mb-4"><div class="h-full bg-amber-400 rounded-full" style="width:68%"></div></div>
+          <div class="grid grid-cols-4 gap-2 text-center">
+            <div class="card rounded-xl py-2.5"><div class="tnum text-xl font-bold">7</div><div class="text-[10px] text-txt-500">Mangler</div></div>
+            <div class="card rounded-xl py-2.5"><div class="tnum text-xl font-bold">3</div><div class="text-[10px] text-txt-500">TS</div></div>
+            <div class="card rounded-xl py-2.5"><div class="tnum text-xl font-bold">12</div><div class="text-[10px] text-txt-500">KS</div></div>
+            <div class="card rounded-xl py-2.5"><div class="tnum text-xl font-bold">1</div><div class="text-[10px] text-txt-500">Afvist</div></div>
           </div>
         </div>
       </div>
@@ -306,8 +312,8 @@
         <div class="w-12 h-12 rounded-2xl bg-amber-400/10 border border-amber-400/20 text-amber-300 flex items-center justify-center mb-4">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
         </div>
-        <h3 class="text-lg font-bold mb-2">Faktura på 2 klik</h3>
-        <p class="text-sm text-txt-300 leading-relaxed">Auto-genereret fra registreret tid + materialer. Sendes via e-Boks/mail. SKAT-godkendt formatering.</p>
+        <h3 class="text-lg font-bold mb-2">Faktura med moms-PDF</h3>
+        <p class="text-sm text-txt-300 leading-relaxed">Opret faktura pr. sag med linjeposter og 25% moms. Fortløbende fakturanr. og færdig PDF med dit firma som afsender.</p>
       </div>
 
       <div class="reveal card lift rounded-3xl p-7">
@@ -397,37 +403,34 @@
     <div class="grid md:grid-cols-3 gap-5 lg:gap-6 relative">
       <div class="reveal card lift rounded-3xl p-8">
         <div class="display text-5xl ink-grad mb-4">01</div>
-        <h3 class="text-lg font-bold mb-2">Tag tiden &amp; dokumentér</h3>
-        <p class="text-sm text-txt-300 leading-relaxed">Start timer, knips fotos og placér tilsyn med GPS direkte fra pladsen — også offline.</p>
+        <h3 class="text-lg font-bold mb-2">Dokumentér på pladsen</h3>
+        <p class="text-sm text-txt-300 leading-relaxed">Knips fotos, registrér mangler og placér tilsyn med GPS direkte på tegningen — også offline.</p>
       </div>
       <div class="reveal card lift rounded-3xl p-8">
         <div class="display text-5xl ink-grad mb-4">02</div>
         <h3 class="text-lg font-bold mb-2">Saml sagen ét sted</h3>
-        <p class="text-sm text-txt-300 leading-relaxed">Tegninger, mangler, KS og materialer synkroniseres automatisk på tværs af hele holdet.</p>
+        <p class="text-sm text-txt-300 leading-relaxed">Tegninger, mangler, TS, KS og fotos synkroniseres automatisk på tværs af hele holdet.</p>
       </div>
       <div class="reveal card lift rounded-3xl p-8">
         <div class="display text-5xl ink-grad mb-4">03</div>
-        <h3 class="text-lg font-bold mb-2">Fakturér &amp; få betalt</h3>
-        <p class="text-sm text-txt-300 leading-relaxed">Auto-genereret faktura fra registreret tid sendes via e-Boks — samme dag jobbet er færdigt.</p>
+        <h3 class="text-lg font-bold mb-2">Rapportér &amp; fakturér</h3>
+        <p class="text-sm text-txt-300 leading-relaxed">Lav en professionel PDF-tilsynsrapport — og send faktura med moms direkte fra sagen.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ================= TESTIMONIAL ================= -->
+<!-- ================= MISSION ================= -->
 <section class="py-20 lg:py-28 px-5 lg:px-8 border-y border-border/70" style="background:linear-gradient(180deg,transparent,rgba(16,20,30,0.5),transparent)">
   <div class="max-w-4xl mx-auto text-center reveal">
-    <svg width="44" height="36" viewBox="0 0 40 32" fill="#F5B301" class="mx-auto mb-8 opacity-60" aria-hidden="true"><path d="M0 32V20C0 9 6 1.5 18 0v8c-5 1.5-8 5-8 12h8v12H0zM22 32V20c0-11 6-18.5 18-20v8c-5 1.5-8 5-8 12h8v12H22z"/></svg>
+    <div class="eyebrow text-amber-300 mb-6">Hvorfor TradeFlow</div>
     <p class="display text-[clamp(1.6rem,3.6vw,2.7rem)] text-txt-100 leading-[1.25] mb-8">
-      “Vi gik fra papir-sedler og Excel til TradeFlow på to uger. Nu sender vi fakturaer dagen efter jobbet er færdigt — det har givet os <span class="ink-grad">18 dages bedre likviditet</span>.”
+      Bygget til danske håndværkere, der vil <span class="ink-grad">dokumentere ordentligt</span> uden at drukne i papir — tegninger, mangler, KS og fotos samlet i lommen.
     </p>
-    <div class="flex items-center justify-center gap-3">
-      <div class="w-12 h-12 rounded-full btn-amber font-bold flex items-center justify-center">PH</div>
-      <div class="text-left">
-        <div class="font-bold">Peter Holm</div>
-        <div class="text-sm text-txt-500">Indehaver, Holm VVS · 7 ansatte</div>
-      </div>
-    </div>
+    <a href="index.html" class="inline-flex items-center gap-2 text-amber-300 font-semibold hover:text-amber-200">
+      Prøv appen selv
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </a>
   </div>
 </section>
 
@@ -457,7 +460,7 @@
         <a href="index.html" class="block w-full text-center card btn-ghost text-txt-100 font-bold py-3.5 rounded-2xl mb-7">Start gratis prøve</a>
         <ul class="space-y-3 text-sm text-txt-300">
           <li class="flex gap-2.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2.5" class="shrink-0 mt-0.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>1 bruger</li>
-          <li class="flex gap-2.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2.5" class="shrink-0 mt-0.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Tidsregistrering + GPS-kørsel</li>
+          <li class="flex gap-2.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2.5" class="shrink-0 mt-0.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Sager, mangler &amp; tilsyn med GPS</li>
           <li class="flex gap-2.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2.5" class="shrink-0 mt-0.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Foto-dokumentation</li>
           <li class="flex gap-2.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2.5" class="shrink-0 mt-0.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Fakturering via e-Boks + mail</li>
           <li class="flex gap-2.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5B301" stroke-width="2.5" class="shrink-0 mt-0.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Op til 25 aktive sager</li>
@@ -536,7 +539,7 @@
       </details>
       <details class="reveal card rounded-2xl overflow-hidden">
         <summary class="flex items-center justify-between p-5 cursor-pointer font-semibold text-txt-100"><span>Virker appen offline ude på pladsen?</span><svg class="chev shrink-0 ml-3" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg></summary>
-        <div class="px-5 pb-5 text-sm text-txt-300 leading-relaxed">Ja. Tegninger og dagens sager caches lokalt. Tidsregistrering, fotos og pins synkroniseres automatisk når du får net igen — perfekt til kælderprojekter og afsides byggepladser.</div>
+        <div class="px-5 pb-5 text-sm text-txt-300 leading-relaxed">Ja. Tegninger og dagens sager caches lokalt. Mangler, fotos og pins synkroniseres automatisk når du får net igen — perfekt til kælderprojekter og afsides byggepladser.</div>
       </details>
       <details class="reveal card rounded-2xl overflow-hidden">
         <summary class="flex items-center justify-between p-5 cursor-pointer font-semibold text-txt-100"><span>Hvilke Revit-versioner understøttes?</span><svg class="chev shrink-0 ml-3" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg></summary>
@@ -544,7 +547,7 @@
       </details>
       <details class="reveal card rounded-2xl overflow-hidden">
         <summary class="flex items-center justify-between p-5 cursor-pointer font-semibold text-txt-100"><span>Skal mine kunder også have et abonnement?</span><svg class="chev shrink-0 ml-3" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg></summary>
-        <div class="px-5 pb-5 text-sm text-txt-300 leading-relaxed">Nej. Dine kunder modtager fakturaer via mail/e-Boks som almindelige PDF'er. De kan også få et gratis kunde-login for at se sagsstatus, fotos og PDF-rapporter — det koster ikke ekstra.</div>
+        <div class="px-5 pb-5 text-sm text-txt-300 leading-relaxed">Nej. Du genererer faktura og tilsynsrapport som PDF i appen og sender den til kunden, fx via mail. Dine kunder skal ikke betale for noget for at modtage dokumenterne.</div>
       </details>
     </div>
   </div>
