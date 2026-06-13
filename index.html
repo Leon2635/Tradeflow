@@ -119,23 +119,23 @@
   .shadow-soft { box-shadow: 0 1px 0 var(--shadow-1), 0 4px 12px var(--shadow-1); }
   .shadow-card { box-shadow: 0 1px 0 var(--shadow-1), 0 8px 24px var(--shadow-2); }
 
-  /* Smal desktop/tablet-landskab (900–1023px): telefon-attrap som hidtil */
-  @media (min-width: 900px) and (max-width: 1023px) {
+  /* Smal desktop-vindue MED MUS (900–1023px): telefon-attrap som hidtil */
+  @media (min-width: 900px) and (max-width: 1023px) and (hover: hover) and (pointer: fine) {
     body { display:flex; align-items:center; justify-content:center; min-height:100vh;
            background: radial-gradient(1200px 600px at 50% -10%, var(--bg-grad-from) 0%, var(--bg-grad-to) 60%); padding:20px; }
     #app { width:393px; height:852px; background: rgb(var(--c-paper)); border-radius:40px; overflow:hidden;
            box-shadow: 0 30px 80px rgba(0,0,0,0.30), 0 0 0 4px var(--frame-ring);
            position:relative; }
   }
-  /* Phone, tablet — fill entire viewport */
-  @media (max-width: 899px) {
+  /* Telefoner OG alle touch-tablets (inkl. iPad) — fyld hele skærmen som mobil-app */
+  @media (max-width: 899px), (pointer: coarse), (hover: none) {
     body { padding: 0; background: rgb(var(--c-paper)); }
     #app { width:100%; height:100vh; height:100dvh; position:relative; overflow:hidden; }
   }
 
-  /* ===== DESKTOP-PLATFORM (≥1024px): venstremenu + topbar. Mobil-rendering er UÆNDRET. ===== */
+  /* ===== DESKTOP-PLATFORM (≥1024px MED MUS): venstremenu + topbar. Mobil/iPad er UÆNDRET. ===== */
   #dt-side, #dt-top, .dtonly { display:none; }
-  @media (min-width: 1024px) {
+  @media (min-width: 1024px) and (hover: hover) and (pointer: fine) {
     body { padding:0; background: rgb(var(--c-paper)); }
     #app { width:100%; height:100vh; position:relative; overflow:hidden;
            display:grid; grid-template-columns:248px 1fr; grid-template-rows:64px 1fr;
@@ -1652,7 +1652,7 @@ async function deleteCustomCategory(key) {
 // ============================================================
 // Standard mappestruktur — neutral og licensfri (admin kan selv tilføje/ændre mapper)
 // ============================================================
-const APP_BUILD = '1.36.0 · 12-06-2026';
+const APP_BUILD = '1.37.0 · 13-06-2026';
 const DEFAULT_FOLDERS = [
   { code: 'C01', name: 'Basis' },
   { code: 'C02', name: 'Aftaler' },
@@ -3539,13 +3539,13 @@ function setIfcView(view) {
   if (!cam || !controls) return;
   const d = (ifcViewer.fitDist || 10) * 1.5;
   controls.target.set(0, 0, 0);
-  // Z-op (byggemodel-konvention): Z er lodret, X/Y vandret
+  // Y-op (verdens-standard efter rotationen): Y er lodret, X/Z vandret
   const views = {
-    iso:   { pos: [d * 0.8, -d * 0.8, d * 0.7], up: [0, 0, 1] },
-    reset: { pos: [d * 0.8, -d * 0.8, d * 0.7], up: [0, 0, 1] },
-    front: { pos: [0, -d, 0], up: [0, 0, 1] },
-    side:  { pos: [d, 0, 0], up: [0, 0, 1] },
-    top:   { pos: [0, 0, d], up: [0, 1, 0] }, // se lige ned ad Z
+    iso:   { pos: [d * 0.8, d * 0.7, d * 0.8], up: [0, 1, 0] },
+    reset: { pos: [d * 0.8, d * 0.7, d * 0.8], up: [0, 1, 0] },
+    front: { pos: [0, 0, d], up: [0, 1, 0] },
+    side:  { pos: [d, 0, 0], up: [0, 1, 0] },
+    top:   { pos: [0, d, 0], up: [0, 0, -1] }, // se lige ned ad Y
   };
   const v = views[view] || views.iso;
   cam.up.set(v.up[0], v.up[1], v.up[2]);
@@ -3591,7 +3591,8 @@ async function openIfcViewer(tegning, srcBlob) {
     scene.add(new THREE.AmbientLight(0xffffff, 0.75));
     const d1 = new THREE.DirectionalLight(0xffffff, 0.85); d1.position.set(1, 2, 1.5); scene.add(d1);
     const d2 = new THREE.DirectionalLight(0xffffff, 0.35); d2.position.set(-1, -0.5, -1); scene.add(d2);
-    camera.up.set(0, 0, 1); // IFC/byggemodeller er Z-op → så vender modellen rigtigt
+    // Y-op verden (three.js/OrbitControls-standard) → naturlig rotation. IFC-data (Z-op) roteres til Y-op nedenfor.
+    camera.up.set(0, 1, 0);
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true; controls.dampingFactor = 0.1;
     controls.screenSpacePanning = true;
@@ -3642,11 +3643,12 @@ async function openIfcViewer(tegning, srcBlob) {
     api.CloseModel(modelID);
 
     if (group.children.length === 0) throw new Error('Ingen geometri fundet i modellen');
-    // Ingen rotation — vi bruger Z-op kamera, så modellen står oprejst som i Revit/IFC
     scene.add(group);
+    // IFC er Z-op; roter -90° om X så modellen bliver Y-op (verdens-standard) og står oprejst
+    group.rotation.x = -Math.PI / 2;
     group.updateMatrixWorld(true);
 
-    // Centrér + tilpas kamera
+    // Centrér + tilpas kamera (mål bbox EFTER rotationen)
     const box = new THREE.Box3().setFromObject(group);
     const size = box.getSize(new THREE.Vector3());
     const center = box.getCenter(new THREE.Vector3());
