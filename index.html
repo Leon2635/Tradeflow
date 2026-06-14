@@ -1788,7 +1788,7 @@ async function deleteCustomCategory(key) {
 // ============================================================
 // Standard mappestruktur — neutral og licensfri (admin kan selv tilføje/ændre mapper)
 // ============================================================
-const APP_BUILD = '1.40.0 · 13-06-2026';
+const APP_BUILD = '1.41.0 · 14-06-2026';
 const DEFAULT_FOLDERS = [
   { code: 'C01', name: 'Basis' },
   { code: 'C02', name: 'Aftaler' },
@@ -7013,13 +7013,15 @@ async function invoicePdf(inv) {
     prof.bank ? 'Bank: ' + esc(prof.bank) : '',
     prof.mobilepay ? 'MobilePay: ' + esc(prof.mobilepay) : '',
   ].filter(Boolean).join(' &nbsp;·&nbsp; ');
+  const footParts = [prof.company, prof.cvr ? 'CVR ' + prof.cvr : '', prof.phone, prof.email]
+    .filter(Boolean).map(esc).join(' · ');
   const rows = (inv.lines || []).map(l => {
     const lt = (Number(l.qty) || 0) * (Number(l.price) || 0);
     return `<tr><td>${esc(l.desc)}</td><td style="text-align:right" class="num">${(Number(l.qty)||0).toLocaleString('da-DK')}</td><td>${esc(l.unit || '')}</td><td style="text-align:right" class="num">${invMoney(l.price)}</td><td style="text-align:right" class="num">${invMoney(lt)}</td></tr>`;
   }).join('');
   const html = `<div class="page invoice">
     <div class="inv-head">
-      <div>${logo || `<div class="brand">${esc(prof.company || 'TradeFlow')}</div>`}<div class="from">${senderLines}</div></div>
+      <div>${logo ? logo + (prof.company ? `<div class="brand" style="font-size:16px;margin-top:6px">${esc(prof.company)}</div>` : '') : `<div class="brand">${prof.company ? esc(prof.company) : '<span style="color:#cbd5e1">Dit firmanavn</span>'}</div>`}<div class="from">${senderLines}</div></div>
       <div class="inv-meta">
         <div class="inv-title">FAKTURA</div>
         <table class="meta">
@@ -7041,7 +7043,10 @@ async function invoicePdf(inv) {
     </table>
     ${inv.note ? `<div class="inv-note">${esc(inv.note)}</div>` : ''}
     ${pay ? `<div class="inv-pay">${pay}</div>` : ''}
-    <div class="inv-foot">Betalingsfrist: ${invDateStr(inv.dueDate)} · Beløb i DKK</div>
+    <div class="inv-foot">
+      ${footParts ? `<div style="color:#475569;font-weight:600;margin-bottom:3px">${footParts}</div>` : ''}
+      Betalingsfrist: ${invDateStr(inv.dueDate)} · Alle beløb i DKK
+    </div>
   </div>`;
   showReport(html);
 }
