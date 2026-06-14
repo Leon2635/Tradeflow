@@ -1561,9 +1561,21 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div class="text-base font-bold text-ink-900 flex-1" id="invoice-modal-title">Ny faktura</div>
+        <button class="tap w-9 h-9 rounded-full bg-soft text-ink-500 hidden items-center justify-center" id="inv-delete-btn" aria-label="Slet faktura">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
         <span class="text-xs font-bold text-ink-500 tabular-nums" id="invoice-modal-no"></span>
       </div>
       <div class="flex-1 overflow-y-auto p-4 space-y-4" id="invoice-form-body">
+        <!-- Status (kun ved redigering) -->
+        <div id="inv-status-row" class="hidden bg-surface rounded-2xl border border-border shadow-soft p-3">
+          <div class="text-[11px] uppercase tracking-wider text-ink-500 font-bold mb-2">Status</div>
+          <div class="grid grid-cols-3 gap-1.5" id="inv-status-seg">
+            <button type="button" data-status="draft" class="inv-st tap py-2 rounded-lg text-xs font-bold border border-border text-ink-700 bg-paper">Kladde</button>
+            <button type="button" data-status="sent" class="inv-st tap py-2 rounded-lg text-xs font-bold border border-border text-ink-700 bg-paper">Sendt</button>
+            <button type="button" data-status="paid" class="inv-st tap py-2 rounded-lg text-xs font-bold border border-border text-ink-700 bg-paper">Betalt</button>
+          </div>
+        </div>
         <!-- Modtager -->
         <div class="bg-surface rounded-2xl border border-border shadow-soft p-4 space-y-3">
           <div class="text-[11px] uppercase tracking-wider text-ink-500 font-bold">Modtager (kunde)</div>
@@ -1776,7 +1788,7 @@ async function deleteCustomCategory(key) {
 // ============================================================
 // Standard mappestruktur — neutral og licensfri (admin kan selv tilføje/ændre mapper)
 // ============================================================
-const APP_BUILD = '1.39.0 · 13-06-2026';
+const APP_BUILD = '1.40.0 · 13-06-2026';
 const DEFAULT_FOLDERS = [
   { code: 'C01', name: 'Basis' },
   { code: 'C02', name: 'Aftaler' },
@@ -6785,6 +6797,20 @@ function getGPS() {
 // ============================================================
 const VAT_RATE = 0.25;
 let _invoiceEditId = null; // id på faktura der redigeres (null = ny)
+let _invoiceStatus = 'draft'; // valgt status i modalen (kladde/sendt/betalt)
+
+function invSetStatusUI(status) {
+  _invoiceStatus = status;
+  document.querySelectorAll('#inv-status-seg .inv-st').forEach(b => {
+    const on = b.dataset.status === status;
+    b.classList.toggle('bg-clay-400', on);
+    b.classList.toggle('text-white', on);
+    b.classList.toggle('border-clay-400', on);
+    b.classList.toggle('bg-paper', !on);
+    b.classList.toggle('text-ink-700', !on);
+    b.classList.toggle('border-border', !on);
+  });
+}
 
 async function getInvoiceProfile() {
   return await loadSetting('invoiceProfile', {
@@ -6893,6 +6919,10 @@ async function openNewInvoice() {
   const sag = state.activeSagId ? await getOne('sager', state.activeSagId) : null;
   document.getElementById('invoice-modal-title').textContent = 'Ny faktura';
   document.getElementById('invoice-modal-no').textContent = 'Næste nr. ' + (prof.nextNo || 1);
+  document.getElementById('inv-status-row').classList.add('hidden');
+  document.getElementById('inv-delete-btn').classList.add('hidden');
+  document.getElementById('inv-delete-btn').classList.remove('flex');
+  invSetStatusUI('draft');
   document.getElementById('inv-rcpt-name').value = sag?.customer || '';
   document.getElementById('inv-rcpt-addr').value = sag?.address || '';
   document.getElementById('inv-rcpt-cvr').value = '';
@@ -6912,6 +6942,10 @@ async function openInvoice(id) {
   _invoiceEditId = id;
   document.getElementById('invoice-modal-title').textContent = inv.number ? 'Faktura #' + inv.number : 'Kladde';
   document.getElementById('invoice-modal-no').textContent = inv.number ? '#' + inv.number : '';
+  document.getElementById('inv-status-row').classList.remove('hidden');
+  const delBtn = document.getElementById('inv-delete-btn');
+  delBtn.classList.remove('hidden'); delBtn.classList.add('flex');
+  invSetStatusUI(inv.status || 'draft');
   document.getElementById('inv-rcpt-name').value = inv.recipient?.name || '';
   document.getElementById('inv-rcpt-addr').value = inv.recipient?.address || '';
   document.getElementById('inv-rcpt-cvr').value = inv.recipient?.cvr || '';
@@ -6931,9 +6965,12 @@ async function saveInvoice(finalize) {
   if (!form.recipient.name) { toast('Udfyld kundenavn'); return null; }
   if (!form.lines.length) { toast('Tilføj mindst én linje'); return null; }
   const existing = _invoiceEditId ? await getOne('invoices', _invoiceEditId) : null;
+  // Status: redigering bruger det valgte segment; ny faktura afgøres af knappen
+  let status = existing ? _invoiceStatus : (finalize ? 'sent' : 'draft');
+  if (finalize && status === 'draft') status = 'sent';
+  // Tildel fortløbende fakturanummer når fakturaen reelt udstedes (sendt/betalt)
   let number = existing?.number || null;
-  // Tildel fortløbende fakturanummer ved første færdiggørelse (PDF)
-  if (finalize && !number) {
+  if (!number && (status === 'sent' || status === 'paid')) {
     const prof = await getInvoiceProfile();
     number = prof.nextNo || 1;
     await saveSetting('invoiceProfile', { ...prof, nextNo: number + 1 });
@@ -6942,15 +6979,24 @@ async function saveInvoice(finalize) {
     id: existing?.id || ('inv_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7)),
     sagId: existing?.sagId || state.activeSagId || null,
     number,
-    status: existing?.status || (finalize ? 'sent' : 'draft'),
+    status,
     ...form,
     createdAt: existing?.createdAt || Date.now(),
     updatedAt: Date.now(),
   };
-  if (finalize && inv.status === 'draft') inv.status = 'sent';
   await put('invoices', inv);
   _invoiceEditId = inv.id;
   return inv;
+}
+
+async function deleteInvoice() {
+  if (!_invoiceEditId) return;
+  if (!confirm('Slet denne faktura? Handlingen kan ikke fortrydes.')) return;
+  await del('invoices', _invoiceEditId);
+  _invoiceEditId = null;
+  closeModal('modal-invoice');
+  renderInvoices();
+  toast('Faktura slettet');
 }
 
 async function invoicePdf(inv) {
@@ -7005,6 +7051,9 @@ function setupInvoices() {
   document.getElementById('inv-add-line')?.addEventListener('click', () => {
     document.getElementById('inv-lines').appendChild(invLineRow({}));
   });
+  document.getElementById('inv-status-seg')?.querySelectorAll('.inv-st').forEach(b =>
+    b.addEventListener('click', () => invSetStatusUI(b.dataset.status)));
+  document.getElementById('inv-delete-btn')?.addEventListener('click', deleteInvoice);
   document.getElementById('inv-save-draft')?.addEventListener('click', async () => {
     const inv = await saveInvoice(false); if (!inv) return;
     closeModal('modal-invoice'); renderInvoices(); toast('Kladde gemt');
